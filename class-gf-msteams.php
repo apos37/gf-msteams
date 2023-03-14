@@ -278,7 +278,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 	 * @return string
 	 */
 	public function note_avatar() {
-		return MSTEAMS_PLUGIN_DIR.'img/msteams-logo.svg';
+		return MSTEAMS_PLUGIN_DIR.'img/msteams-logo.png';
 	} // End note_avatar()
 
 
