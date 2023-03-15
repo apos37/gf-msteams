@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:         Gravity Forms Microsoft Teams Add-On
+ * Plugin Name:         Add-On for Microsoft Teams and Gravity Forms
  * Plugin URI:          https://github.com/apos37/admin-help-docs
  * Description:         Send Gravity Form entries to Microsoft Teams channel
  * Version:             1.0.1
@@ -22,7 +22,7 @@ if ( !defined( 'ABSPATH' ) ) {
 /**
  * Defines
  */
-define( 'MSTEAMS_NAME', 'Gravity Forms Microsoft Teams Add-On' );
+define( 'MSTEAMS_NAME', 'Add-On for Microsoft Teams and Gravity Forms' );
 define( 'MSTEAMS_TEXTDOMAIN', 'gf-msteams' );
 define( 'MSTEAMS_VERSION', '1.0.1' );
 define( 'MSTEAMS_PLUGIN_ROOT', plugin_dir_path( __FILE__ ) );                   //: /home/.../public_html/wp-content/plugins/gf-msteams/

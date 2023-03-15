@@ -1,4 +1,4 @@
-=== Gravity Forms Microsoft Teams Add-On ===
+=== Add-On for Microsoft Teams and Gravity Forms ===
 Contributors: apos37
 Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: microsoft, teams, gravity, forms, chat, webhook
