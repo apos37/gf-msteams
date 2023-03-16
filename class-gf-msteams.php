@@ -347,7 +347,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 				'fields'      => [
 					[
 						'name'              => 'site_name',
-						'tooltip'           => esc_html__( 'The site name displayed on the messages.', 'gf-msteams' ),
+						'tooltip'           => esc_html__( 'The site name displayed on the messages. Limited to 50 characters.', 'gf-msteams' ),
 						'label'             => esc_html__( 'Site Name', 'gf-msteams' ),
 						'type'              => 'text',
 						'class'             => 'medium',
@@ -454,17 +454,18 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		}
 		#site-info-preview { display: inline-block; margin: 5px 0 0 10px; vertical-align: top; }
 		#site-name-preview { 
-			display: block; 
-			font-size: 1.4rem; 
+			display: block;
+			font-size: 1.4rem;
 			font-weight: 600;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			width: 50%;
 		}
 		#site-url-preview { display: block; font-size: 1rem; color: #7074D0; }
 		#mode-preview { float: right; }
 		#mode-preview a:active, #mode-preview a:focus, #mode-preview a:hover { color: #7074D0; }
+		.gform-settings-panel__content,
+		.gform-settings-panel__content label,
+		.gform-settings-panel__content input {
+			transition: all 1s ease;
+		}
 		</style>';
 
 		// Display it
@@ -485,9 +486,15 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 			panel.style.background = "transparent";
 			panel.style.color = "#1d2327";
 
-			let panelLabels = document.querySelectorAll( ".gform-settings-panel__content .gform-settings-label" );
+			let panelLabels = document.querySelectorAll( ".gform-settings-panel__content label" );
 			panelLabels.forEach( label => {
 				label.style.color = "#1d2327";
+			} );
+
+			let panelInputs = document.querySelectorAll( ".gform-settings-panel__content input" );
+			panelInputs.forEach( input => {
+				input.style.backgroundColor = "revert";
+				input.style.color = "revert";
 			} );
 		}
 
@@ -501,17 +508,37 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 			panelLabels.forEach( label => {
 				label.style.color = "white";
 			} );
+
+			let panelInputs = document.querySelectorAll( ".gform-settings-panel__content input" );
+			panelInputs.forEach( input => {
+				input.style.backgroundColor = "#292929";
+				input.style.color = "white";
+			} );
 		}
 
 		// Update the site name in real time
-		updateSiteNamePreview();
-		function updateSiteNamePreview() {
+		updateSiteName();
+		function updateSiteName() {
 			// Get the site logo value
 			let nameField = document.getElementById( "site_name" );
 			let preview = document.getElementById( "site-name-preview" );
 
+			// The max limit
+			let maxChars = 50;
+			
+			// Limit character count on FeedName
+			nameField.addEventListener( "keydown", ( e ) => {
+				if ( nameField.value.length > maxChars ) {
+					nameField.value = nameField.value.substr( 0, maxChars );
+				}
+			} );
+
 			// Listen for change
 			nameField.addEventListener( "keyup", ( event ) => {
+				if ( nameField.value.length > maxChars ) {
+					nameField.value = nameField.value.substr( 0, maxChars );
+				}
+
 				let name = nameField.value;
 				if ( name == "" ) {
 					name = "'.esc_html( get_bloginfo( 'name' ) ).'";
@@ -585,15 +612,26 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 	 */
 	public function feed_settings_fields() {
 		// Get the current feed
-		$feed =  $this->get_current_feed();
+		if ( $feed =  $this->get_current_feed() ) {
 
-		// Get the form
-		$form = GFAPI::get_form( $feed[ 'form_id' ] );
+			// Get the form
+			$form = GFAPI::get_form( $feed[ 'form_id' ] );
+			
+		// Or else get the id from the query string
+		} elseif ( isset( $_GET[ 'id' ] ) && absint( $_GET[ 'id' ] ) != '' ) {
+
+			// Get the form
+			$form = GFAPI::get_form( absint( $_GET[ 'id' ] ) );
+
+		// Or no form
+		} else {
+			$form = false;
+		}
 
 		// Return the fields
 		return [
 			[
-				'title'  => esc_html__( 'Microsoft Teams Integration Settings', 'gf-msteams' ),
+				'title'  => esc_html__( 'Feed Settings', 'gf-msteams' ),
 				'fields' => [
 					[
 						'name'     => 'feedName',
@@ -601,6 +639,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 						'type'     => 'text',
 						'required' => true,
 						'class'    => 'medium',
+						'limit'	   => 60,
 						'tooltip'  => esc_html__( 'Enter a title to uniquely identify this message. This will be used as your feed name as well as the title of your Teams message.', 'gf-msteams' ),
 					],
 					[
@@ -643,11 +682,23 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 						'tooltip'   => esc_html__( 'Setup the message values by selecting the appropriate form field from the list.', 'gf-msteams' ),
 					],
 					[
-						'label'   => 'Include the following fields and additional information in Teams Message',
-						'type'    => 'checkbox',
 						'name'    => 'checkboxgroup',
+						'label'   => esc_html__( 'Include the following fields and additional information in Teams Message' ),
+						'type'    => 'checkbox',
 						'tooltip' => esc_html__( 'Select which fields should be included in the Teams message.' ),
 						'choices' => $this->get_list_facts( $form )
+					],
+					[
+						'name'    => 'hideblankgroup',
+						'label'   => esc_html__( 'Hide fields with blank values' ),
+						'type'    => 'checkbox',
+						'tooltip' => esc_html__( 'Removes fields from Teams message if the values are empty.' ),
+						'choices' => [
+							[
+								'label' => 'Yes',
+								'name'  => 'hide_blank'
+							]
+						]
 					],
 				],
 			],
@@ -841,8 +892,15 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		// If we sent the form entry successfully
 		} else {
 
+			// Add channel?
+			if ( isset( $feed[ 'meta' ][ 'channel' ] ) && $feed[ 'meta' ][ 'channel' ] != '' ) {
+				$incl_channel = ' | Channel: '.$feed[ 'meta' ][ 'channel' ];
+			} else {
+				$incl_channel = '';
+			}
+
 			// Succcesful 
-            $note = 'Entry sent successfully to Microsoft Teams';
+            $note = 'Entry sent successfully to Microsoft Teams<br>Feed: '.$feed[ 'meta' ][ 'feedName' ].$incl_channel;
             $sub_type = 'success';
             
             // Log that the registrant was added.
@@ -863,6 +921,13 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
      * @return array
      */
     public function send_form_entry( $feed, $entry, $form, $email ) {
+		// Are we hiding empty values?
+		if ( isset( $feed[ 'meta' ][ 'hide_blank' ] ) && $feed[ 'meta' ][ 'hide_blank' ] ) {
+			$hiding = true;
+		} else {
+			$hiding = false;
+		}
+
         // Store the messsage facts
         $facts = [];
 
@@ -932,11 +997,18 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
                 $value = $entry[ $field_id ];
 			}
 
+			// Does the label end with ? or :
+			if ( !str_ends_with( $label, '?' ) && !str_ends_with( $label, ':' ) ) {
+				$label = $label.':';
+			}
+
             // Add the fact
-            $facts[] = [
-                'name'  => $label.': ',
-                'value' => $value
-            ];
+			if ( !$hiding || ( $hiding && $value != '' ) ) {
+				$facts[] = [
+					'name'  => $label,
+					'value' => $value
+				];
+			}
 
             // Check if the field type is a survey
             if ( !$email && $field->type == 'email' && isset( $entry[ $field_id ] ) ) {
@@ -970,9 +1042,9 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		}
 
 		// Add the user id as a fact
-		if ( isset( $feed[ 'meta' ][ 'user_id' ] ) && $feed[ 'meta' ][ 'user_id' ] ) {
+		if ( $user_id ) {
 			$facts[] = [
-				'name'  => 'User ID: ',
+				'name'  => 'User ID:',
 				'value' => $user_id
 			];
 		}
@@ -980,7 +1052,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
         // Add the source url as a fact
 		if ( isset( $feed[ 'meta' ][ 'source_url' ] ) && $feed[ 'meta' ][ 'source_url' ] ) {
 			$facts[] = [
-				'name'  => 'Source URL: ',
+				'name'  => 'Source URL:',
 				'value' => $entry[ 'source_url' ]
 			];
 		}
@@ -1098,7 +1170,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 				'targets' => [
 					[
 						'os'  => 'default',
-						'uri' => home_url().'/wp-admin/users.php?s='.$args[ 'email' ]
+						'uri' => admin_url( 'user-edit.php?user_id='.$args[ 'user_id' ] )
 					]
 				]
 			];

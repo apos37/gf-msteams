@@ -4,7 +4,7 @@ Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: microsoft, teams, gravity, forms, chat, webhook
 Requires at least: 5.9.0
 Tested up to: 6.1.1
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -28,6 +28,10 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 4. Microsoft Teams channel post
 
 == Changelog ==
-= 1.0.2 =
-* Fixed name field
-* Shorten site name preview in case site name is extremely long
+= 1.0.3 =
+* Added option to hide fields on Teams message that have empty values
+* Fixed form fields not showing on feed settings until saved
+* Animated light/dark mode preview on plugin settings
+* Limited character count for site name to prevent issues
+* Added feed name and channel to entry notes
+* Removed colons from labels if they end with colons or question marks
