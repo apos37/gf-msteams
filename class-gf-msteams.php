@@ -453,7 +453,15 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 			display: inline-block;
 		}
 		#site-info-preview { display: inline-block; margin: 5px 0 0 10px; vertical-align: top; }
-		#site-name-preview { display: block; font-size: 1.4rem; font-weight: 600; }
+		#site-name-preview { 
+			display: block; 
+			font-size: 1.4rem; 
+			font-weight: 600;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			width: 50%;
+		}
 		#site-url-preview { display: block; font-size: 1rem; color: #7074D0; }
 		#mode-preview { float: right; }
 		#mode-preview a:active, #mode-preview a:focus, #mode-preview a:hover { color: #7074D0; }
@@ -914,6 +922,10 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
             // Quiz questions
             } elseif ( $field->type != 'quiz' && $field->choices && !empty( $field->choices ) ) {
                 $value = self::get_gf_checkbox_values( $form, $entry, $field_id );
+
+			// Otherwise just return the field value    
+            } elseif ( $field->type == 'name' ) {
+                $value = $entry[ $field_id.'.3' ].' '.$entry[ $field_id.'.6' ];
 
             // Otherwise just return the field value    
             } elseif ( isset( $entry[ $field_id ] ) ) {

@@ -4,7 +4,7 @@ Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: microsoft, teams, gravity, forms, chat, webhook
 Requires at least: 5.9.0
 Tested up to: 6.1.1
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -28,5 +28,6 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 4. Microsoft Teams channel post
 
 == Changelog ==
-= 1.0.1 =
-* Created this plugin on March 14, 2023
+= 1.0.2 =
+* Fixed name field
+* Shorten site name preview in case site name is extremely long
