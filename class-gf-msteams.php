@@ -85,6 +85,14 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 
 
 	/**
+	 * Default accent color
+	 *
+	 * @var string
+	 */
+	public $default_accent_color = '#FF0000';
+
+
+	/**
 	 * Get an instance of this class.
 	 *
 	 * @return GF_MicrosoftTeams
@@ -125,13 +133,13 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 	 *
 	 * @return void
 	 */
-	public function media_uploader() {
-		if ( is_admin() ) {
-			wp_enqueue_media();
-			wp_register_script( 'msteams-media-uploader-js', MSTEAMS_PLUGIN_DIR.'media-uploader.js', [ 'jquery' ], '1.0.1', true );
-			wp_enqueue_script( 'msteams-media-uploader-js' );
-		}
-	} // End media_uploader()
+	// public function media_uploader() {
+	// 	if ( is_admin() ) {
+	// 		wp_enqueue_media();
+	// 		wp_register_script( 'msteams-media-uploader-js', MSTEAMS_PLUGIN_DIR.'media-uploader.js', [ 'jquery' ], '1.0.1', true );
+	// 		wp_enqueue_script( 'msteams-media-uploader-js' );
+	// 	}
+	// } // End media_uploader()
 
 
 	/**
@@ -145,13 +153,13 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 	// 			'handle'    => 'gf_msteams_media_uploader',
 	// 			'src'       => MSTEAMS_PLUGIN_DIR.'media-uploader.js',
 	// 			'version'   => $this->_version,
-	// 			'deps'      => [ 'jquery', 'media' ],
+	// 			'deps'      => [ 'jquery' ],
 	// 			'in_footer' => true,
 	// 			'enqueue'   => [
 	// 				[
-	// 					'admin_page' => [ 'form_settings', 'plugin_page' ],
-	// 					'tab'        => MSTEAMS_TEXTDOMAIN,
-	// 					// 'query' 	 => 'page=gf_settings&subview='.MSTEAMS_TEXTDOMAIN
+	// 					// 'admin_page' => [ 'plugin_page' ],
+	// 					// 'tab'        => 'gf-msteams',
+	// 					'query' => 'page=gf_settings&subview='.MSTEAMS_TEXTDOMAIN
 	// 				],
 	// 			],
 	// 		],
@@ -232,13 +240,13 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 			foreach ( $feeds as $feed ) {
 
 				// The feed title
-				$results .= '<strong>'.$feed[ 'meta' ][ 'feedName' ].':</strong><br><br>';
+				$results .= '<strong><a href="'.$this->feed_settings_url( $form[ 'id' ], $feed[ 'id' ] ).'">'.$feed[ 'meta' ][ 'feedName' ].'</a>:</strong><br><br>';
 
 				// The current url
 				$current_url = '/wp-admin/admin.php?page=gf_entries&view=entry&id='.$form[ 'id' ].'&lid='.$entry[ 'id' ];
 
 				// Resend button
-				$results .= '<a class="button" href="'.$current_url.'&feed_id='.$feed[ 'id' ].'&msteams=true">Send to Teams</a>';
+				$results .= '<a class="button" href="'.$current_url.'&feed_id='.$feed[ 'id' ].'&msteams=true">Resend</a>';
 
 				// Space between
 				$results .= $br;
@@ -315,6 +323,18 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 
 
 	/**
+	 * Get the feed settings url
+	 *
+	 * @param int $form_id
+	 * @param int $feed_id
+	 * @return string
+	 */
+	public function feed_settings_url( $form_id, $feed_id ) {
+		return admin_url( 'admin.php?page=gf_edit_forms&view=settings&subview='.MSTEAMS_TEXTDOMAIN.'&id='.$form_id.'&fid='.$feed_id );
+	} // End feed_settings_url()
+
+
+	/**
 	 * Configures the settings which should be rendered on the add-on settings tab.
 	 *
 	 * @return array
@@ -336,7 +356,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
                     ],
 					[
 						'name'              => 'site_logo',
-						'tooltip'           => esc_html__( 'Upload a logo to be used on the messages. For best results, use an image with the same width and height.', 'gf-msteams' ),
+						'tooltip'           => esc_html__( 'Upload a logo to be used on the messages. For best results, use a small image with the same width and height around 100x100px.', 'gf-msteams' ),
 						'label'             => esc_html__( 'Site Logo', 'gf-msteams' ),
 						'type'              => 'text',
 						'class'             => 'medium',
@@ -349,13 +369,18 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 					// 	'class'             => 'medium',
 					// 	'args'  => [
                     //         'button' => [
-                    //             'label'   => esc_html__( '', 'gf-msteams' ),
+                    //             // 'label'   => esc_html__( '', 'gf-msteams' ),
                     //             'name'    => 'upload_image_button',
 					// 			'class'   => 'button',
 					// 			'value'   => 'Upload Image'
 					// 		],
 					// 	],
                     // ],
+					[
+						'name'              => 'msteams_preview',
+						'type'              => 'msteams_preview',
+						'class'             => 'medium',
+                    ],
                 ],
             ],
 			[
@@ -390,6 +415,122 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
             $button[ 'value' ],
         );
     } // End settings_media_upload()
+
+
+	/**
+	 * Site logo preview
+	 *
+	 * @param array $field
+	 * @param boolean $echo
+	 * @return void
+	 */
+	public function settings_msteams_preview( $field, $echo = true ) {
+		// Get the site name
+		$get_site_name = sanitize_text_field( $this->get_plugin_setting( 'site_name' ) );
+        if ( $get_site_name && $get_site_name != '' ) {
+            $site_name = $get_site_name;
+        } else {
+            $site_name = get_bloginfo( 'name' ); // Blog Name
+        }
+
+		// Get the current logo
+		$get_site_logo = esc_url_raw( $this->get_plugin_setting( 'site_logo' ) );
+		if ( $get_site_logo && $get_site_logo != '' ) {
+            $url = $get_site_logo;
+        } else {
+            $url = MSTEAMS_PLUGIN_DIR.'img/wordpress-logo.png'; // WP Logo
+        }
+
+		// Add some css
+		echo '</pre>
+		<style>
+		#msteams-preview { margin-top: 30px; }
+		#site-logo-preview {
+			background: center / contain no-repeat url('.esc_url_raw( $url ).'); 
+			width: 5.2rem; 
+			height: 5.2rem; 
+			border-radius: 50%; 
+			display: inline-block;
+		}
+		#site-info-preview { display: inline-block; margin: 5px 0 0 10px; vertical-align: top; }
+		#site-name-preview { display: block; font-size: 1.4rem; font-weight: 600; }
+		#site-url-preview { display: block; font-size: 1rem; color: #7074D0; }
+		#mode-preview { float: right; }
+		#mode-preview a:active, #mode-preview a:focus, #mode-preview a:hover { color: #7074D0; }
+		</style>';
+
+		// Display it
+        echo '<div id="msteams-preview">
+			<div id="site-logo-preview"></div>
+			<div id="site-info-preview">
+				<span id="site-name-preview">'.esc_html( $site_name ).'</span><br>
+				<span id="site-url-preview">'.esc_url( home_url() ).'</span>
+			</div>
+			<div id="mode-preview"><a href="#" onclick="msteamsLightMode(); return false;">Light</a> | <a href="#" onclick="msteamsDarkMode(); return false;">Dark</a></div>
+		</div>';
+
+		// Add JS to update immediately
+		echo '<script>
+		// Switch to light mode
+		function msteamsLightMode() {
+			let panel = document.querySelector( ".gform-settings-panel__content" );
+			panel.style.background = "transparent";
+			panel.style.color = "#1d2327";
+
+			let panelLabels = document.querySelectorAll( ".gform-settings-panel__content .gform-settings-label" );
+			panelLabels.forEach( label => {
+				label.style.color = "#1d2327";
+			} );
+		}
+
+		// Switch to dark mode
+		function msteamsDarkMode() {
+			let panel = document.querySelector( ".gform-settings-panel__content" );
+			panel.style.background = "#2E2E2E";
+			panel.style.color = "white";
+
+			let panelLabels = document.querySelectorAll( ".gform-settings-panel__content .gform-settings-label" );
+			panelLabels.forEach( label => {
+				label.style.color = "white";
+			} );
+		}
+
+		// Update the site name in real time
+		updateSiteNamePreview();
+		function updateSiteNamePreview() {
+			// Get the site logo value
+			let nameField = document.getElementById( "site_name" );
+			let preview = document.getElementById( "site-name-preview" );
+
+			// Listen for change
+			nameField.addEventListener( "keyup", ( event ) => {
+				let name = nameField.value;
+				if ( name == "" ) {
+					name = "'.esc_html( get_bloginfo( 'name' ) ).'";
+				}
+				preview.innerHTML = name;
+			} );
+		}
+
+		// Update the logo in real time
+		updateSiteLogoPreview();
+		function updateSiteLogoPreview() {
+			// Get the site logo value
+			let logoField = document.getElementById( "site_logo" );
+			let preview = document.getElementById( "site-logo-preview" );
+
+			// Listen for change
+			logoField.addEventListener( "keyup", ( event ) => {
+				let url = logoField.value;
+				if ( url == "" ) {
+					url = "'.esc_attr( MSTEAMS_PLUGIN_DIR ).'img/wordpress-logo.png";
+				}
+				preview.style.background = "center / contain no-repeat url(" + url + ")";
+			} );
+		}
+		</script>
+		<pre>';
+    } // End settings_msteams_preview()
 
 
 	/**
@@ -435,6 +576,13 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 	 * @return array
 	 */
 	public function feed_settings_fields() {
+		// Get the current feed
+		$feed =  $this->get_current_feed();
+
+		// Get the form
+		$form = GFAPI::get_form( $feed[ 'form_id' ] );
+
+		// Return the fields
 		return [
 			[
 				'title'  => esc_html__( 'Microsoft Teams Integration Settings', 'gf-msteams' ),
@@ -462,24 +610,36 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 						'tooltip'  => esc_html__( 'The Microsoft Teams channel name. For reference only.', 'gf-msteams' ),
 					],
 					[
-						'name'     => 'color',
-						'label'    => esc_html__( 'Accent Color (Optional)', 'gf-msteams' ),
-						'type'     => 'text',
-						'required' => false,
-						'tooltip'  => esc_html__( 'Enter a hex color code for the accent color on the message. Default is red (#FF0000).', 'gf-msteams' ),
+						'name'          => 'color',
+						'label'         => esc_html__( 'Accent Color', 'gf-msteams' ),
+						'type'          => 'text',
+						'required'      => false,
+						'tooltip'       => esc_html__( 'Choose a color for the top bar of the messages using a hex code. Default is red (#FF0000).', 'gf-msteams' ),
 						'default_value' => '#FF0000',
 					],
+					[
+						'name'  	=> 'top_section_footer',
+						'type'  	=> 'top_section_footer',
+						'class' 	=> 'medium',
+                    ],
 				],
 			],
 			[
-				'title'  => esc_html__( 'Field Mapping', 'gf-msteams' ),
+				'title'  => esc_html__( 'Fields', 'gf-msteams' ),
 				'fields' => [
 					[
 						'name'      => 'mappedFields',
-						'label'     => esc_html__( 'Match fields', 'gf-msteams' ),
+						'label'     => esc_html__( 'Match required fields', 'gf-msteams' ),
 						'type'      => 'field_map',
 						'field_map' => $this->merge_vars_field_map(),
 						'tooltip'   => esc_html__( 'Setup the message values by selecting the appropriate form field from the list.', 'gf-msteams' ),
+					],
+					[
+						'label'   => 'Include the following fields and additional information in Teams Message',
+						'type'    => 'checkbox',
+						'name'    => 'checkboxgroup',
+						'tooltip' => esc_html__( 'Select which fields should be included in the Teams message.' ),
+						'choices' => $this->get_list_facts( $form )
 					],
 				],
 			],
@@ -497,7 +657,52 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 			],
 		];
 	} // End feed_settings_fields()
-	
+
+
+	/**
+	 * Plugin settings link "field"
+	 *
+	 * @param array $field
+	 * @param boolean $echo
+	 * @return void
+	 */
+	public function settings_color( $field, $echo = true ) {
+		// Get the color
+		$color = $this->get_setting( 'color' );
+		printf(
+			'<input type="color" id="%s" name="%s" class="%s" value="%s" style="width: 10rem;"/>',
+			$field[ 'name' ],
+			$field[ 'name' ],
+			$field[ 'class' ],
+			$color,
+		);
+    } // End settings_color()
+
+
+	/**
+	 * Plugin settings link "field"
+	 *
+	 * @param array $field
+	 * @param boolean $echo
+	 * @return void
+	 */
+	public function settings_top_section_footer( $field, $echo = true ) {
+		// Get the color
+		$color = $this->sanitize_and_validate_color( $this->get_setting( 'color' ), $this->default_accent_color );
+
+		// Add CSS
+		echo '</pre>
+		<style>
+		#gform-settings-section-microsoft-teams-integration-settings .gform-settings-panel__content { 
+			border-top: 3px solid '.esc_attr( $color ).' !important; 
+		}
+		</style>';
+
+		// Color div and Link to plugin settings page
+        echo '<div id="plugin-settings-link" style="margin-top: 30px;"><a href="'.esc_url( MSTEAMS_SETTINGS_URL ).'">Plugin Settings</a></div>
+		<pre>';
+    } // End settings_plugin_link()
+
 
 	/**
 	 * Return an array of Zoom Webinar list fields which can be mapped to the Form fields/entry meta.
@@ -656,19 +861,24 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
         // Iter the fields
         foreach ( $form[ 'fields' ] as $field ) {
     
-            // Get the field label
-            $label = $field->label;
+            // Skip HTML fields
+            if ( $field->type == 'html' || $field->type == 'section' ) {
+                continue;
+            }
 
             // Get the field ID
             $field_id = $field->id;
 
+			// Skip field if not enabled
+			if ( isset( $feed[ 'meta' ][ $field_id ] ) && !$feed[ 'meta' ][ $field_id ] ) {
+				continue;
+			}
+
+			// Get the field label
+            $label = $field->label;
+
             // Store the value here
             $value = '';
-
-            // Skip HTML fields
-            if ( $field->type == 'html' ) {
-                continue;
-            }
 
             // Check if the field type is a survey
             if ( $field->type == 'survey' ) {
@@ -723,22 +933,10 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
         }
 
         // Check for a user id
-        $user_id = $entry[ 'created_by' ];
-
-        // Add the user id as a fact
-        $facts[] = [
-            'name'  => 'User ID: ',
-            'value' => $user_id
-        ];
-
-        // Add the source url as a fact
-        $facts[] = [
-            'name'  => 'Source URL: ',
-            'value' => $entry[ 'source_url' ]
-        ];
+        $user_id = $entry[ 'created_by' ];        
 
         // Did we not find an email?
-        if ( $email == '' && $user_id > 0 ) {
+        if ( ( !$email || $email == '' ) && $user_id > 0 ) {
 
             // Check if the user exists
             if ( $user = get_userdata( $user_id ) ) {
@@ -747,6 +945,33 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
                 $email = $user->user_email;
             }
         }
+
+		// Last resort user id
+		if ( $email && $email != '' && $user_id == 0 ) {
+			
+			// Attempt to find user by email
+			if ( $user = get_user_by( 'email', $email ) ) {
+				
+				// Set the user id
+				$user_id = $user->ID;
+			}
+		}
+
+		// Add the user id as a fact
+		if ( isset( $feed[ 'meta' ][ 'user_id' ] ) && $feed[ 'meta' ][ 'user_id' ] ) {
+			$facts[] = [
+				'name'  => 'User ID: ',
+				'value' => $user_id
+			];
+		}
+
+        // Add the source url as a fact
+		if ( isset( $feed[ 'meta' ][ 'source_url' ] ) && $feed[ 'meta' ][ 'source_url' ] ) {
+			$facts[] = [
+				'name'  => 'Source URL: ',
+				'value' => $entry[ 'source_url' ]
+			];
+		}
 
         // Put the message args together
         $args = [
@@ -770,20 +995,6 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
             return false;
         }
     } // End send_form_entry()
-
-
-    /**
-     * Get Gravity Form checkbox values
-     *
-     * @param array $form
-     * @param array $entry
-     * @param int|float $field_id
-     * @return mixed
-     */
-    public static function get_gf_checkbox_values( $form, $entry, $field_id ) {
-        $field = GFAPI::get_field( $form, $field_id );
-        return $field->get_value_export( $entry );
-    } // End get_gf_checkbox_values()
 
 
     /**
@@ -825,12 +1036,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
         }
 
         // Get the accent color
-		$get_color = sanitize_hex_color( $feed[ 'meta' ][ 'color' ] );
-        if ( $get_color && $get_color != '' ) {
-            $color = $get_color;
-        } else {
-            $color = '#FF0000'; // Red
-        }
+		$color = $this->sanitize_and_validate_color( $feed[ 'meta' ][ 'color' ], $this->default_accent_color );
 
         // Put the message card together
         $data = [
@@ -919,6 +1125,20 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 
 
 	/**
+     * Get Gravity Form checkbox values
+     *
+     * @param array $form
+     * @param array $entry
+     * @param int|float $field_id
+     * @return mixed
+     */
+    public static function get_gf_checkbox_values( $form, $entry, $field_id ) {
+        $field = GFAPI::get_field( $form, $field_id );
+        return $field->get_value_export( $entry );
+    } // End get_gf_checkbox_values()
+
+
+	/**
 	 * Sanitize image
 	 *
 	 * @param string $input
@@ -943,7 +1163,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 
 
 	/**
-	 * Get Zoom Webinar registration merge fields for list.
+	 * Get merge fields for list.
 	 *
 	 * @return array
 	 */
@@ -960,6 +1180,57 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		// Return the fields
 		return $fields;
 	} // End get_list_merge_fields()
+
+
+	/**
+	 * Get the list of form fields to include as facts
+	 *
+	 * @param array $form
+	 * @return array
+	 */
+	public function get_list_facts( $form ) {
+		// Store the messsage facts
+        $facts = [];
+
+        // Iter the fields
+        foreach ( $form[ 'fields' ] as $field ) {
+    
+            // Skip HTML fields
+            if ( $field->type == 'html' || $field->type == 'section' ) {
+                continue;
+            }
+
+			// Get the field label
+            $label = $field->label;
+
+            // Get the field ID
+            $field_id = $field->id;
+
+            // Add the fact
+            $facts[] = [
+                'label' 		=> $label,
+                'name'  		=> $field_id,
+				'default_value' => true,
+            ];
+        }
+
+		// Add the user id
+		$facts[] = [
+			'label' 		=> 'User ID',
+        	'name' 			=> 'user_id',
+			'default_value' => true,
+		];
+
+		// Add the source
+		$facts[] = [
+			'label' 		=> 'Source URL',
+        	'name' 			=> 'source_url',
+			'default_value' => true,
+		];
+
+		// Return the array
+		return $facts;
+	} // End get_list_facts()
 
 
 	/**
@@ -1008,4 +1279,33 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		exit();
 	} // End remove_qs_without_refresh()
 
+
+	/**
+	 * Sanitize a hex color and force hash
+	 *
+	 * @param string $color
+	 * @param string $default
+	 * @return string|void
+	 */
+	public function sanitize_and_validate_color( $color, $default ) {
+		// Check if color exists and if it's still not blank after sanitation
+		if ( $color && ( sanitize_hex_color( $color ) != '' || sanitize_hex_color_no_hash( $color ) != '' ) ) {
+			
+			// If it has hash
+			if ( str_starts_with( $color, '#' ) ) {
+				$color = sanitize_hex_color( $color );
+
+			// If it does not have hash
+			} else {
+				$color = '#'.sanitize_hex_color_no_hash( $color );
+			}
+
+		// Otherwise return the sanitized default
+		} else {
+			$color = sanitize_hex_color( $default );
+		}
+
+		// Return the color
+		return $color;
+	} // End sanitize_and_validate_color()
 }

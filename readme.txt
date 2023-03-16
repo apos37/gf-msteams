@@ -22,7 +22,7 @@ Automatically send Gravity Form entries to a Microsoft Teams channel using an In
 Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 
 == Screenshots ==
-1. Settings page
+1. Plugin settings page
 2. Form feed settings page
 3. Entry page
 4. Microsoft Teams channel post
