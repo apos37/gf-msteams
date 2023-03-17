@@ -1,4 +1,13 @@
 == changelog.txt ==
+= 1.0.4 =
+* Added option for custom button with merge tag support
+* Added option for turning buttons on and off
+* Added message field with merge tag support
+* Added media uploader to site logo
+* Fixed checkbox values not showing up properly
+* Fixed radio button results to show text instead of values
+* Added support for str_ends_with() for php < 8.0
+
 = 1.0.3 =
 * Added option to hide fields on Teams message that have empty values
 * Fixed form fields not showing on feed settings until saved

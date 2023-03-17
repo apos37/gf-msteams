@@ -75,14 +75,6 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 	 */
 	protected $_short_title = 'Microsoft Teams';
 
-	
-	/**
-	 * Core singleton class
-	 *
-	 * @var self - pattern realization
-	 */
-	private static $_instance;
-
 
 	/**
 	 * Default accent color
@@ -90,6 +82,14 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 	 * @var string
 	 */
 	public $default_accent_color = '#FF0000';
+
+	
+	/**
+	 * Core singleton class
+	 *
+	 * @var self - pattern realization
+	 */
+	private static $_instance;
 
 
 	/**
@@ -119,27 +119,9 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 			GFCache::set( 'msteams_plugin_settings', $plugin_settings );
 		}
 
-		// Add the media uploader script
-		// TODO: Will work on this for next version
-		// add_action( 'admin_enqueue_scripts', [ $this, 'media_uploader' ] );
-
 		// Add a meta box to the entries
         add_filter( 'gform_entry_detail_meta_boxes', [ $this, 'entry_meta_box' ], 10, 3 );
 	} // End init()
-
-
-	/**
-	 * Media uploader script
-	 *
-	 * @return void
-	 */
-	// public function media_uploader() {
-	// 	if ( is_admin() ) {
-	// 		wp_enqueue_media();
-	// 		wp_register_script( 'msteams-media-uploader-js', MSTEAMS_PLUGIN_DIR.'media-uploader.js', [ 'jquery' ], '1.0.1', true );
-	// 		wp_enqueue_script( 'msteams-media-uploader-js' );
-	// 	}
-	// } // End media_uploader()
 
 
 	/**
@@ -147,25 +129,26 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 	 *
 	 * @return array
 	 */
-	// public function scripts() {
-	// 	$scripts = [
-	// 		[
-	// 			'handle'    => 'gf_msteams_media_uploader',
-	// 			'src'       => MSTEAMS_PLUGIN_DIR.'media-uploader.js',
-	// 			'version'   => $this->_version,
-	// 			'deps'      => [ 'jquery' ],
-	// 			'in_footer' => true,
-	// 			'enqueue'   => [
-	// 				[
-	// 					// 'admin_page' => [ 'plugin_page' ],
-	// 					// 'tab'        => 'gf-msteams',
-	// 					'query' => 'page=gf_settings&subview='.MSTEAMS_TEXTDOMAIN
-	// 				],
-	// 			],
-	// 		],
-	// 	];
-	// 	return array_merge( parent::scripts(), $scripts );
-	// } // End scripts()
+	public function scripts() {
+		$scripts = [
+			[
+				'handle'    => 'gf_msteams_media_uploader',
+				'src'       => MSTEAMS_PLUGIN_DIR.'media-uploader.js',
+				'version'   => $this->_version,
+				'deps'      => [ 'jquery' ],
+				'callback'  => 'wp_enqueue_media',
+				'in_footer' => true,
+				'enqueue'   => [
+					[
+						// 'admin_page' => [ 'plugin_page' ],
+						// 'tab'        => 'gf-msteams',
+						'query' => 'page=gf_settings&subview='.MSTEAMS_TEXTDOMAIN
+					],
+				],
+			],
+		];
+		return array_merge( parent::scripts(), $scripts );
+	} // End scripts()
 
 
 	/**
@@ -180,7 +163,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
         // Link to Debug Form and Entry
         if ( !isset( $meta_boxes[ 'msteams' ] ) ) {
             $meta_boxes[ 'msteams' ] = [
-                'title'         => esc_html__( 'Microsoft Teams', 'gravityforms' ),
+                'title'         => esc_html__( 'Microsoft Teams', 'gf-msteams' ),
                 'callback'      => [ $this, 'entry_meta_box_content' ],
                 'context'       => 'side',
                 'callback_args' => [ $entry, $form ],
@@ -363,19 +346,19 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 						'default_value' 	=> MSTEAMS_PLUGIN_DIR.'img/wordpress-logo.png',
 						'feedback_callback' => [ $this, 'validate_image' ],
                     ],
-					// [
-					// 	'name'              => 'upload_image_button',
-					// 	'type'              => 'media_upload',
-					// 	'class'             => 'medium',
-					// 	'args'  => [
-                    //         'button' => [
-                    //             // 'label'   => esc_html__( '', 'gf-msteams' ),
-                    //             'name'    => 'upload_image_button',
-					// 			'class'   => 'button',
-					// 			'value'   => 'Upload Image'
-					// 		],
-					// 	],
-                    // ],
+					[
+						'name'              => 'upload_image_button',
+						'type'              => 'media_upload',
+						'class'             => 'medium',
+						'args'  => [
+                            'button' => [
+                                // 'label'   => esc_html__( '', 'gf-msteams' ),
+                                'name'    => 'upload_image_button',
+								'class'   => 'button',
+								'value'   => 'Upload Image'
+							],
+						],
+                    ],
 					[
 						'name'              => 'msteams_preview',
 						'type'              => 'msteams_preview',
@@ -606,7 +589,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 
 
 	/**
-	 * Configures the settings which should be rendered on the Form Settings > Zoom Webinar tab.
+	 * Configures the settings which should be rendered on the Form Settings > Microsoft Teams tab.
 	 *
 	 * @return array
 	 */
@@ -665,6 +648,12 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 						'default_value' => '#FF0000',
 					],
 					[
+						'name'    => 'message',
+						'label'   => esc_html__( 'Message (Optional)', 'gf-msteams' ),
+						'type'    => 'textarea',
+						'class'   => 'medium merge-tag-support mt-position-right',
+					],
+					[
 						'name'  	=> 'top_section_footer',
 						'type'  	=> 'top_section_footer',
 						'class' 	=> 'medium',
@@ -703,7 +692,74 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 				],
 			],
 			[
-				'title'  => 'Feed Conditions',
+				'title'  => esc_html__( 'Buttons', 'gf-msteams' ),
+				'fields' => [
+					[
+						'name'    => 'buttonsgroup',
+						'label'   => esc_html__( 'Include the following buttons in Teams Message' ),
+						'type'    => 'checkbox',
+						'tooltip' => esc_html__( 'Select which buttons should be included in the Teams message.' ),
+						'choices' => [
+							[
+								'label'         => 'Visit Site',
+								'name'          => 'visit_site',
+								'default_value' => true,
+							],
+							[
+								'label'         => 'View Entry',
+								'name'          => 'view_entry',
+								'default_value' => true,
+							],
+							[
+								'label'         => 'View User',
+								'name'          => 'view_user',
+								'default_value' => true,
+							]
+						]
+					],
+					[
+						'name'    => 'add_custom_button',
+						'type'    => 'checkbox',
+						'choices' => [
+							[
+								'label' => 'Add a Custom Button Link',
+								'name'  => 'custom_button'
+							]
+						]
+					],
+					[
+						'name'    => 'custom_button_text',
+						'label'   => esc_html__( 'Button Text' ),
+						'type'    => 'text',
+						'class'   => 'medium merge-tag-support mt-position-right',
+						'dependency' =>  [
+							'live'   => true,
+							'fields' => [
+								[
+									'field' => 'add_custom_button',
+								],
+							],
+						]
+					],
+					[
+						'name'    => 'custom_button_url',
+						'label'   => esc_html__( 'Button URL' ),
+						'type'    => 'text',
+						'class'   => 'medium merge-tag-support mt-position-right',
+						'default_value' => 'https://',
+						'dependency' => [
+							'live'   => true,
+							'fields' => [
+								[
+									'field' => 'add_custom_button',
+								],
+							],
+						]
+					],
+				],
+			],
+			[
+				'title'  => esc_html__( 'Feed Conditions', 'gf-msteams' ),
 				'fields' => [
 					[
 						'name'           => 'condition',
@@ -719,13 +775,13 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 
 
 	/**
-	 * Plugin settings link "field"
+	 * Color "field"
 	 *
 	 * @param array $field
 	 * @param boolean $echo
 	 * @return void
 	 */
-	public function settings_color( $field, $echo = true ) {
+	public function settings_color( $field ) {
 		// Get the color
 		$color = $this->get_setting( 'color' );
 		printf(
@@ -745,14 +801,14 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 	 * @param boolean $echo
 	 * @return void
 	 */
-	public function settings_top_section_footer( $field, $echo = true ) {
+	public function settings_top_section_footer( $field ) {
 		// Get the color
 		$color = $this->sanitize_and_validate_color( $this->get_setting( 'color' ), $this->default_accent_color );
 
 		// Add CSS
 		echo '</pre>
 		<style>
-		#gform-settings-section-microsoft-teams-integration-settings .gform-settings-panel__content { 
+		#gform-settings-section-feed-settings { 
 			border-top: 3px solid '.esc_attr( $color ).' !important; 
 		}
 		</style>';
@@ -764,7 +820,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 
 
 	/**
-	 * Return an array of Zoom Webinar list fields which can be mapped to the Form fields/entry meta.
+	 * Return an array of list fields which can be mapped to the Form fields/entry meta.
 	 *
 	 * @return array
 	 */
@@ -822,7 +878,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 
 
 	/**
-	 * Process the feed: register user with Zoom Webinar.
+	 * Process the feed
 	 *
 	 * @param array $feed  The feed object to be processed.
 	 * @param array $entry The entry object currently being processed.
@@ -953,14 +1009,25 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
             // Store the value here
             $value = '';
 
-            // Check if the field type is a survey
-            if ( $field->type == 'survey' ) {
-                
-                // Get the choices
-                $choices = $field->choices;
+            // Consent fields
+            if ( $field->type == 'consent' ) {
 
-                // Store selected
-                $selected = 0;
+                // If they selected the consent checkbox
+                if ( isset( $entry[ $field_id ] ) && $entry[ $field_id ] == 1 ) {
+                    $value = 'True';
+                }
+            
+            // Checkbox
+            } elseif ( $field->type == 'checkbox' ) {
+                
+				// Get the choices
+                $value = $this->get_gf_checkbox_values( $form, $entry, $field_id );
+            
+            // Radio/survey/select
+            } elseif ( $field->type != 'quiz' && $field->choices && !empty( $field->choices ) ) {
+
+				// Get the choices
+                $choices = $field->choices;
 
                 // Iter the choices
                 foreach ( $choices as $choice ) {
@@ -968,25 +1035,10 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
                     // Get the choice
                     if ( strpos( $entry[ $field_id ], $choice[ 'value' ] ) !== false ) {
 
-                        // Increase selected
-                        $selected++;
-
                         // Get the value
                         $value = $choice[ 'text' ];
                     }
                 }
-              
-            // Consent fields
-            } elseif ( $field->type == 'consent' ) {
-
-                // If they selected the consent checkbox
-                if ( isset( $entry[ $field_id ] ) && $entry[ $field_id ] == 1 ) {
-                    $value = 'True';
-                }
-            
-            // Quiz questions
-            } elseif ( $field->type != 'quiz' && $field->choices && !empty( $field->choices ) ) {
-                $value = self::get_gf_checkbox_values( $form, $entry, $field_id );
 
 			// Otherwise just return the field value    
             } elseif ( $field->type == 'name' ) {
@@ -1059,8 +1111,6 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 
         // Put the message args together
         $args = [
-            'form_id'  => $form[ 'id' ],
-            'entry_id' => $entry[ 'id' ],
 			'user_id'  => $user_id,
             'email'    => $email,
 			'webhook'  => $feed[ 'meta' ][ 'webhook' ],
@@ -1068,7 +1118,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
         ];
 
         // Send the message
-        if ( $this->send_msg( $args, $facts, $feed ) ) {
+        if ( $this->send_msg( $args, $facts, $form, $entry, $feed ) ) {
 
             // Return true
             return true;
@@ -1086,7 +1136,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
      *
      * @return void
      */
-    public function send_msg( $args, $facts, $feed ) {
+    public function send_msg( $args, $facts, $form, $entry, $feed ) {
         // Get the site name
 		$get_site_name = sanitize_text_field( $this->get_plugin_setting( 'site_name' ) );
         if ( $get_site_name && $get_site_name != '' ) {
@@ -1119,6 +1169,15 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
             return false;
         }
 
+		// Get the message
+		$get_message = sanitize_textarea_field( $feed[ 'meta' ][ 'message' ] );
+        if ( $get_message && $get_message != '' ) {
+			$message = GFCommon::replace_variables( $get_message, $form, $entry, false, true, false, 'text' );
+            $message = '<br><br>'.$message;
+        } else {
+            $message = '';
+        }
+
         // Get the accent color
 		$color = $this->sanitize_and_validate_color( $feed[ 'meta' ][ 'color' ], $this->default_accent_color );
 
@@ -1134,43 +1193,73 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
                     'activityTitle'    => $site_name,
                     'activitySubtitle' => home_url(),
                     'activityImage'    => $image,
-                    'text'             => $this->convert_timezone( date( 'Y-m-d H:i:s', strtotime( $args[ 'date' ] ) ) ),
+                    'text'             => $this->convert_timezone( date( 'Y-m-d H:i:s', strtotime( $args[ 'date' ] ) ) ).$message,
                     'facts'            => $facts,
                 ]
             ],
-            'potentialAction' => [
-                [
-                    '@type'   => 'OpenUri',
-                    'name'    => 'Visit Site',
-                    'targets' => [
-                        [
-                            'os'  => 'default',
-                            'uri' => home_url()
-                        ]
-                    ]
-                ],
-                [
-                    '@type'   => 'OpenUri',
-                    'name'    => 'View Entry',
-                    'targets' => [
-                        [
-                            'os'  => 'default',
-                            'uri' => home_url().'/wp-admin/admin.php?page=gf_entries&view=entry&id='.$args[ 'form_id' ].'&lid='.$args[ 'entry_id' ]
-                        ]
-                    ]
-                ],
-            ]
         ];
 
-		// View User Button
-		if ( $args[ 'user_id' ] > 0 ) {
+		// Visit Site Button
+		if ( isset( $feed[ 'meta' ][ 'visit_site' ] ) && $feed[ 'meta' ][ 'visit_site' ] ) {
 			$data[ 'potentialAction' ][] = [
 				'@type'   => 'OpenUri',
-				'name'    => 'View User',
+				'name'    => esc_html__( 'Visit Site', 'gf-msteams' ),
+				'targets' => [
+					[
+						'os'  => 'default',
+						'uri' => home_url()
+					]
+				]
+			];
+		}
+
+		// View Entry Button
+		if ( isset( $feed[ 'meta' ][ 'view_entry' ] ) && $feed[ 'meta' ][ 'view_entry' ] ) {
+			$data[ 'potentialAction' ][] = [
+				'@type'   => 'OpenUri',
+				'name'    => esc_html__( 'View Entry', 'gf-msteams' ),
+				'targets' => [
+					[
+						'os'  => 'default',
+						'uri' => home_url().'/wp-admin/admin.php?page=gf_entries&view=entry&id='.$form[ 'id' ].'&lid='.$entry[ 'id' ]
+					]
+				]
+			];
+		}
+
+		// View User Button
+		if ( isset( $feed[ 'meta' ][ 'view_entry' ] ) && $feed[ 'meta' ][ 'view_user' ] && $args[ 'user_id' ] > 0 ) {
+			$data[ 'potentialAction' ][] = [
+				'@type'   => 'OpenUri',
+				'name'    => esc_html__( 'View User', 'gf-msteams' ),
 				'targets' => [
 					[
 						'os'  => 'default',
 						'uri' => admin_url( 'user-edit.php?user_id='.$args[ 'user_id' ] )
+					]
+				]
+			];
+		}
+
+		// Custom Button
+		if ( isset( $feed[ 'meta' ][ 'custom_button' ] ) && $feed[ 'meta' ][ 'custom_button' ] && 
+		     isset( $feed[ 'meta' ][ 'custom_button_text' ] ) && sanitize_text_field( $feed[ 'meta' ][ 'custom_button_text' ] ) != '' && 
+		     isset( $feed[ 'meta' ][ 'custom_button_url' ] ) && filter_var( $feed[ 'meta' ][ 'custom_button_url' ] , FILTER_SANITIZE_URL ) != '' ) {
+	
+			// Replace merge tag variables
+			$text = sanitize_text_field( $feed[ 'meta' ][ 'custom_button_text' ] );
+			$text = GFCommon::replace_variables( $text, $form, $entry, false, true, false, 'text' );
+			$url = filter_var( $feed[ 'meta' ][ 'custom_button_url' ] , FILTER_SANITIZE_URL );
+			$url = GFCommon::replace_variables( $url, $form, $entry, true, true, false, 'text' );
+			
+			// The button
+			$data[ 'potentialAction' ][] = [
+				'@type'   => 'OpenUri',
+				'name'    => $text,
+				'targets' => [
+					[
+						'os'  => 'default',
+						'uri' => $url
 					]
 				]
 			];
