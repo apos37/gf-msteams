@@ -190,63 +190,76 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		$feeds = GFAPI::get_feeds( null, $form[ 'id' ], MSTEAMS_TEXTDOMAIN );
 
 		// Start the container
-        $results = '<div>';
+		$results = '<div>';
 
-		// If there are feeds
-		if ( !empty( $feeds ) ) {
+		// Check for a wp error
+		if ( !is_wp_error( $feeds ) ) {
 
-			// Send the form entry if query string says so
-			if ( isset( $_GET[ 'msteams' ] ) && sanitize_text_field( $_GET[ 'msteams' ] )  == 'true' &&
-				 isset( $_GET[ 'feed_id' ] ) && absint( $_GET[ 'feed_id' ] ) != '' ) {
+			// If there are feeds
+			if ( !empty( $feeds ) ) {
 
-				// The feed id
-				$feed_id = absint( $_GET[ 'feed_id' ] );
+				// Send the form entry if query string says so
+				if ( isset( $_GET[ 'msteams' ] ) && sanitize_text_field( $_GET[ 'msteams' ] )  == 'true' &&
+					isset( $_GET[ 'feed_id' ] ) && absint( $_GET[ 'feed_id' ] ) != '' ) {
 
-				// Get the feed
-				$feed = GFAPI::get_feed( $feed_id );
+					// The feed id
+					$feed_id = absint( $_GET[ 'feed_id' ] );
 
-				// Process the feed
-				$this->process_feed( $feed, $entry, $form );
+					// Get the feed
+					$feed = GFAPI::get_feed( $feed_id );
 
-				// Remove the query strings
-			    $this->redirect_without_qs( [ 'msteams', 'feed_id' ] );
-			}
+					// Process the feed
+					$this->process_feed( $feed, $entry, $form );
 
-			// Multiple feeds?
-			if ( count( $feeds ) > 1 ) {
-				$br = '<br><br>';
+					// Remove the query strings
+					$this->redirect_without_qs( [ 'msteams', 'feed_id' ] );
+				}
+
+				// Multiple feeds?
+				if ( count( $feeds ) > 1 ) {
+					$br = '<br><br>';
+				} else {
+					$br = '';
+				}
+
+				// Iter the feeds
+				foreach ( $feeds as $feed ) {
+
+					// The feed title
+					$results .= '<strong><a href="'.$this->feed_settings_url( $form[ 'id' ], $feed[ 'id' ] ).'">'.$feed[ 'meta' ][ 'feedName' ].'</a>:</strong><br><br>';
+
+					// The current url
+					$current_url = '/wp-admin/admin.php?page=gf_entries&view=entry&id='.$form[ 'id' ].'&lid='.$entry[ 'id' ];
+
+					// Resend button
+					$results .= '<a class="button" href="'.$current_url.'&feed_id='.$feed[ 'id' ].'&msteams=true">Resend</a>';
+
+					// Space between
+					$results .= $br;
+				}
+
 			} else {
-				$br = '';
-			}
 
-			// Iter the feeds
-			foreach ( $feeds as $feed ) {
-
-				// The feed title
-				$results .= '<strong><a href="'.$this->feed_settings_url( $form[ 'id' ], $feed[ 'id' ] ).'">'.$feed[ 'meta' ][ 'feedName' ].'</a>:</strong><br><br>';
-
-				// The current url
-				$current_url = '/wp-admin/admin.php?page=gf_entries&view=entry&id='.$form[ 'id' ].'&lid='.$entry[ 'id' ];
+				// The feed url
+				$feed_url = '/wp-admin/admin.php?page=gf_edit_forms&view=settings&subview='.MSTEAMS_TEXTDOMAIN.'&id='.$form[ 'id' ];
 
 				// Resend button
-				$results .= '<a class="button" href="'.$current_url.'&feed_id='.$feed[ 'id' ].'&msteams=true">Resend</a>';
-
-				// Space between
-				$results .= $br;
+				$results .= '<a class="button" href="'.$feed_url.'">Add New Feed</a>';
+				
 			}
 
+		// If there is an error
 		} else {
-
+			
 			// The feed url
 			$feed_url = '/wp-admin/admin.php?page=gf_edit_forms&view=settings&subview='.MSTEAMS_TEXTDOMAIN.'&id='.$form[ 'id' ];
 
 			// Resend button
 			$results .= '<a class="button" href="'.$feed_url.'">Add New Feed</a>';
-			
 		}
-        
-        // Start the container
-        $results .= '</div>';
+
+		// Start the container
+		$results .= '</div>';
     
         // Return everything
         echo wp_kses_post( $results );
@@ -362,6 +375,16 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 					[
 						'name'              => 'msteams_preview',
 						'type'              => 'msteams_preview',
+						'class'             => 'medium',
+                    ],
+                ],
+            ],
+			[
+				'title'       => esc_html__( 'My Feeds', 'gf-msteams' ),
+				'fields'      => [
+					[
+						'name'              => 'my_feeds',
+						'type'              => 'my_feeds',
 						'class'             => 'medium',
                     ],
                 ],
@@ -552,6 +575,103 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 
 
 	/**
+	 * Your Feeds field
+	 *
+	 * @param array $field
+	 * @param boolean $echo
+	 * @return void
+	 */
+	public function settings_my_feeds( $field, $echo = true ) {
+		// Start the container
+		echo '</pre>
+		<div>';
+
+		// Get all the feeds
+		$feeds = $this->get_feeds( null, null, null, false );
+
+		// Make sure we have forms
+		if ( !empty( $feeds ) ) {
+
+			// Start the table
+			echo '<table class="wp-list-table widefat fixed striped table-view-list feeds">
+				<thead>
+					<tr>
+						<th scope="col" id="feedName" class="manage-column column-feedName column-primary">Feed Name</th>
+						<th scope="col" id="feedStatus" class="manage-column column-feedStatus">Feed Status</th>
+						<th scope="col" id="channel" class="manage-column column-channel">Channel</th>	
+						<th scope="col" id="form" class="manage-column column-form column-primary">Form</th>
+						<th scope="col" id="formStatus" class="manage-column column-formStatus">Form Status</th>
+					</tr>
+				</thead>
+				<tbody id="the-list" data-wp-lists="list:feed">';
+
+			// Iter the feeds
+			foreach ( $feeds as $feed ) {
+
+				// Get the form id
+				$form_id = $feed[ 'form_id' ];
+
+				// Get the form
+				$form = GFAPI::get_form( $form_id );
+
+				// Get the form feeds link
+				$form_feeds_url = admin_url( 'admin.php?page=gf_edit_forms&view=settings&subview='.MSTEAMS_TEXTDOMAIN.'&id='.$form_id );
+
+				// Check if the form is active
+				if ( $form[ 'is_active' ] ) {
+					$is_form_active = 'Active';
+				} else {
+					$is_form_active = 'Inactive';
+				}
+
+				// Get the form feeds link
+				$feed_url = admin_url( 'admin.php?page=gf_edit_forms&view=settings&subview='.MSTEAMS_TEXTDOMAIN.'&id='.$form_id.'&fid='.$feed[ 'id' ] );
+
+				// Check if the form is active
+				if ( $feed[ 'is_active' ] ) {
+					$is_feed_active = '<span class="active" style="">Active</span>';
+				} else {
+					$is_feed_active = '<span class="inactive" style="color: red; font-style: italic;">Inactive</span>';
+				}
+
+				// Include channel
+				if ( isset( $feed[ 'meta' ][ 'channel' ] ) && sanitize_text_field( $feed[ 'meta' ][ 'channel' ] ) != '' ) {
+					$channel = sanitize_text_field( $feed[ 'meta' ][ 'channel' ] );
+				} else {
+					$channel = '';
+				}
+
+				// Echo the form title and count
+				echo '<tr>
+					<td class="feedName column-feedName column-primary" data-colname="Feed Name" style="font-weight: bold;"><a href="'.esc_url( $feed_url ).'">'.esc_html( $feed[ 'meta' ][ 'feedName' ] ).'</a></td>
+					<td class="feedStatus column-feedStatus column-primary" data-colname="Feed Status">'.wp_kses_post( $is_feed_active ).'</td>
+					<td class="channel column-channel" data-colname="Channel">'.esc_html( $channel ).'</td>
+					<td class="form column-form column-primary" data-colname="Form"><a href="'.esc_url( $form_feeds_url ).'">' .$form[ 'title' ] . '</a></td>
+					<td class="formStatus column-formStatus column-primary" data-colname="Form Status">'.wp_kses_post( $is_form_active ).'</td>
+				</tr>';
+			}
+
+			// End the list
+			echo '</tbody>
+				<tfoot>
+					<tr>
+						<th scope="col" id="feedName" class="manage-column column-feedName column-primary">Feed Name</th>
+						<th scope="col" id="feedStatus" class="manage-column column-feedStatus">Feed Status</th>
+						<th scope="col" id="channel" class="manage-column column-channel">Channel</th>	
+						<th scope="col" id="form" class="manage-column column-form column-primary">Form</th>
+						<th scope="col" id="formStatus" class="manage-column column-formStatus">Form Status</th>
+					</tr>
+				</tfoot>
+			</table>';
+		}
+
+		// End the container
+        echo '</div>
+		<pre>';
+    } // End settings_my_feeds()
+
+
+	/**
 	 * Instructions field
 	 *
 	 * @param array $field
@@ -698,7 +818,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 						'name'    => 'buttonsgroup',
 						'label'   => esc_html__( 'Include the following buttons in Teams Message' ),
 						'type'    => 'checkbox',
-						'tooltip' => esc_html__( 'Select which buttons should be included in the Teams message.' ),
+						'tooltip' => esc_html__( 'Select which buttons should be included in the Teams message. Users are people that have an account on this website.' ),
 						'choices' => [
 							[
 								'label'         => 'Visit Site',
@@ -754,6 +874,24 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 									'field' => 'add_custom_button',
 								],
 							],
+						]
+					],
+					[
+						'name'    => 'custom_button_show_users_only',
+						'type'    => 'checkbox',
+						'dependency' => [
+							'live'   => true,
+							'fields' => [
+								[
+									'field' => 'add_custom_button',
+								],
+							],
+						],
+						'choices' => [
+							[
+								'label' => 'Show custom button for user entries only',
+								'name'  => 'custom_button_users_only'
+							]
 						]
 					],
 				],
@@ -1094,7 +1232,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		}
 
 		// Add the user id as a fact
-		if ( $user_id ) {
+		if ( isset( $feed[ 'meta' ][ 'user_id' ] ) && $feed[ 'meta' ][ 'user_id' ] && $user_id ) {
 			$facts[] = [
 				'name'  => 'User ID:',
 				'value' => $user_id
@@ -1102,7 +1240,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		}
 
         // Add the source url as a fact
-		if ( isset( $feed[ 'meta' ][ 'source_url' ] ) && $feed[ 'meta' ][ 'source_url' ] ) {
+		if ( !$hiding && isset( $feed[ 'meta' ][ 'source_url' ] ) && $feed[ 'meta' ][ 'source_url' ] ) {
 			$facts[] = [
 				'name'  => 'Source URL:',
 				'value' => $entry[ 'source_url' ]
@@ -1242,27 +1380,38 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		}
 
 		// Custom Button
-		if ( isset( $feed[ 'meta' ][ 'custom_button' ] ) && $feed[ 'meta' ][ 'custom_button' ] && 
+		if ( isset( $feed[ 'meta' ][ 'custom_button' ] ) && $feed[ 'meta' ][ 'custom_button' ] &&
 		     isset( $feed[ 'meta' ][ 'custom_button_text' ] ) && sanitize_text_field( $feed[ 'meta' ][ 'custom_button_text' ] ) != '' && 
 		     isset( $feed[ 'meta' ][ 'custom_button_url' ] ) && filter_var( $feed[ 'meta' ][ 'custom_button_url' ] , FILTER_SANITIZE_URL ) != '' ) {
-	
-			// Replace merge tag variables
-			$text = sanitize_text_field( $feed[ 'meta' ][ 'custom_button_text' ] );
-			$text = GFCommon::replace_variables( $text, $form, $entry, false, true, false, 'text' );
-			$url = filter_var( $feed[ 'meta' ][ 'custom_button_url' ] , FILTER_SANITIZE_URL );
-			$url = GFCommon::replace_variables( $url, $form, $entry, true, true, false, 'text' );
-			
-			// The button
-			$data[ 'potentialAction' ][] = [
-				'@type'   => 'OpenUri',
-				'name'    => $text,
-				'targets' => [
-					[
-						'os'  => 'default',
-						'uri' => $url
+
+			// Let's check if we are showing this to users only
+			if ( isset( $feed[ 'meta' ][ 'custom_button_users_only' ] ) && $feed[ 'meta' ][ 'custom_button_users_only' ] ) {
+				$users_only = true;
+			} else {
+				$users_only = false;
+			}
+			if ( $users_only && $args[ 'user_id' ] > 0 || !$users_only ) {
+
+				// Replace merge tag variables
+				$text = sanitize_text_field( $feed[ 'meta' ][ 'custom_button_text' ] );
+				$text = GFCommon::replace_variables( $text, $form, $entry, false, true, false, 'text' );
+				$url = filter_var( $feed[ 'meta' ][ 'custom_button_url' ] , FILTER_SANITIZE_URL );
+				$url = GFCommon::replace_variables( $url, $form, $entry, true, true, false, 'text' );
+				
+				// The button
+				$data[ 'potentialAction' ][] = [
+					'@type'   => 'OpenUri',
+					'name'    => $text,
+					'targets' => [
+						[
+							'os'  => 'default',
+							'uri' => $url
+						]
 					]
-				]
-			];
+				];
+			}
+	
+			
 		}
 
         // Encode

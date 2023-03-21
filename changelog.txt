@@ -1,4 +1,11 @@
 == changelog.txt ==
+= 1.0.6 =
+* Fixed meta box bug on entry view when no feeds have been added
+
+= 1.0.5 =
+* Added option to show custom button to account users only
+* Fixed user id field showing up even if deselected in feed settings
+
 = 1.0.4 =
 * Added option for custom button with merge tag support
 * Added option for turning buttons on and off

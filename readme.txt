@@ -4,7 +4,7 @@ Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: microsoft, teams, gravity, forms, chat, webhook
 Requires at least: 5.9.0
 Tested up to: 6.1.1
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -29,11 +29,6 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 5. Microsoft Teams channel post
 
 == Changelog ==
-= 1.0.4 =
-* Added option for custom button with merge tag support
-* Added option for turning buttons on and off
-* Added message field with merge tag support
-* Added media uploader to site logo
-* Fixed checkbox values not showing up properly
-* Fixed radio button results to show text instead of values
-* Added support for str_ends_with() for php < 8.0
+= 1.0.5 =
+* Added option to show custom button to account users only
+* Fixed user id field showing up even if deselected in feed settings
