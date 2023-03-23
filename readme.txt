@@ -4,7 +4,7 @@ Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: microsoft, teams, gravity, forms, chat, webhook
 Requires at least: 5.9.0
 Tested up to: 6.1.1
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -29,6 +29,6 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 5. Microsoft Teams channel post
 
 == Changelog ==
-= 1.0.5 =
-* Added option to show custom button to account users only
-* Fixed user id field showing up even if deselected in feed settings
+= 1.0.6 =
+* Fixed user buttons not showing up on new entries
+* Fixed meta box bug on entry view when no feeds have been added

@@ -1,5 +1,6 @@
 == changelog.txt ==
 = 1.0.6 =
+* Fixed user buttons not showing up on new entries
 * Fixed meta box bug on entry view when no feeds have been added
 
 = 1.0.5 =

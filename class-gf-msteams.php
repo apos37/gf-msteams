@@ -1207,7 +1207,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
         }
 
         // Check for a user id
-        $user_id = $entry[ 'created_by' ];        
+        $user_id = $entry[ 'created_by' ];
 
         // Did we not find an email?
         if ( ( !$email || $email == '' ) && $user_id > 0 ) {
@@ -1221,7 +1221,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
         }
 
 		// Last resort user id
-		if ( $email && $email != '' && $user_id == 0 ) {
+		if ( $email && $email != '' && ( !$user_id || $user_id == 0 || $user_id == '' ) ) {
 			
 			// Attempt to find user by email
 			if ( $user = get_user_by( 'email', $email ) ) {
