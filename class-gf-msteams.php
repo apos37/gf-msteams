@@ -1171,7 +1171,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
                 foreach ( $choices as $choice ) {
                     
                     // Get the choice
-                    if ( strpos( $entry[ $field_id ], $choice[ 'value' ] ) !== false ) {
+                    if ( isset( $choice[ 'value' ] ) && strpos( $entry[ $field_id ], $choice[ 'value' ] ) !== false ) {
 
                         // Get the value
                         $value = $choice[ 'text' ];

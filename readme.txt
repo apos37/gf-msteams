@@ -3,8 +3,8 @@ Contributors: apos37
 Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: microsoft, teams, gravity, forms, chat, webhook
 Requires at least: 5.9.0
-Tested up to: 6.1.1
-Stable tag: 1.0.6
+Tested up to: 6.2
+Stable tag: 1.0.8
 License: GPL v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -19,7 +19,7 @@ Automatically send Gravity Form entries to a Microsoft Teams channel using an In
 3. Go to Gravity Forms > Settings > Microsoft Teams.
 
 = Where can I request features and get further support? =
-Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
+Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 
 == Screenshots ==
 1. Plugin settings page
@@ -29,6 +29,40 @@ Join my [WordPress Support Discord server](https://discord.gg/VeMTXRVkm5)
 5. Microsoft Teams channel post
 
 == Changelog ==
+= 1.0.8 =
+* Tweak: Updated Discord link
+
+= 1.0.7 =
+* Fix: strpos() empty needle warning
+* Tweak: Updated changelog to use commonly used prefixes (Fix, Tweak, and Update)
+
 = 1.0.6 =
-* Fixed user buttons not showing up on new entries
-* Fixed meta box bug on entry view when no feeds have been added
+* Fix: User buttons not showing up on new entries
+* Fix: Meta box bug on entry view when no feeds have been added
+
+= 1.0.5 =
+* Update: Added option to show custom button to account users only
+* Fix: User ID field showing up even if deselected in feed settings
+
+= 1.0.4 =
+* Update: Added option for custom button with merge tag support
+* Update: Added option for turning buttons on and off
+* Update: Added message field with merge tag support
+* Update: Added media uploader to site logo option
+* Fix: Checkbox values not showing up properly
+* Fix: Radio button results not showing values instead of text
+* Update: Added support for `str_ends_with()` for PHP < 8.0
+
+= 1.0.3 =
+* Update: Added option to hide fields on Teams message that have empty values
+* Fix: Form fields not showing on new feed settings until saved
+* Tweak: Animated light/dark mode preview on plugin settings
+* Tweak: Limited character count for site name to prevent issues
+* Update: Added feed name and channel to entry notes
+* Tweak: Removed colons from labels if they already end with colons or question marks
+
+= 1.0.2 =
+* Fix: Name field not showing up for account users
+
+= 1.0.1 =
+* Created plugin on March 14, 2023
