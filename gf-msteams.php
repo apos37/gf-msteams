@@ -3,13 +3,13 @@
  * Plugin Name:         Add-On for Microsoft Teams and Gravity Forms
  * Plugin URI:          https://apos37.com/wordpress-addon-for-ms-teams-gravity-forms/
  * Description:         Send Gravity Form entries to Microsoft Teams channel
- * Version:             1.0.9
+ * Version:             1.1.0
  * Requires at least:   5.9.0
- * Tested up to:        6.4.3
+ * Tested up to:        6.5.5
  * Author:              Apos37
  * Author URI:          https://apos37.com/
  * Text Domain:         gf-msteams
- * License:             GPL v2 or later
+ * License:             GPLv2 or later
  * License URI:         http://www.gnu.org/licenses/gpl-2.0.txt
  */
 
@@ -24,7 +24,7 @@ if ( !defined( 'ABSPATH' ) ) {
  */
 define( 'MSTEAMS_NAME', 'Add-On for Microsoft Teams and Gravity Forms' );
 define( 'MSTEAMS_TEXTDOMAIN', 'gf-msteams' );
-define( 'MSTEAMS_VERSION', '1.0.9' );
+define( 'MSTEAMS_VERSION', '1.1.0' );
 define( 'MSTEAMS_PLUGIN_ROOT', plugin_dir_path( __FILE__ ) );                                                   // /home/.../public_html/wp-content/plugins/gf-msteams/
 define( 'MSTEAMS_PLUGIN_DIR', plugins_url( '/'.MSTEAMS_TEXTDOMAIN.'/' ) );                                      // https://domain.com/wp-content/plugins/gf-msteams/
 define( 'MSTEAMS_SETTINGS_URL', admin_url( 'admin.php?page=gf_settings&subview='.MSTEAMS_TEXTDOMAIN ) );        // https://domain.com/wp-admin/admin.php?page=gf_settings&subview=gf-msteams/
@@ -103,3 +103,9 @@ if ( version_compare( PHP_VERSION, 8.0, '<=' ) && !function_exists( 'str_ends_wi
         return $needle !== '' && substr( $haystack, -strlen( $needle ) ) === (string)$needle;
     } // End str_ends_with()
 }
+
+
+/**
+ * Require notice
+ */
+require MSTEAMS_PLUGIN_ROOT . 'class-notice.php';

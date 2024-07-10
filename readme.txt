@@ -1,17 +1,32 @@
 === Add-On for Microsoft Teams and Gravity Forms ===
 Contributors: apos37
-Donate link: https://paypal.com/donate/?business=3XHJUEHGTMK3N
 Tags: microsoft, teams, gravity, forms, chat, webhook
 Requires at least: 5.9.0
-Tested up to: 6.4.3
-Stable tag: 1.0.9
-License: GPL v2 or later
+Tested up to: 6.5.5
+Stable tag: 1.1.0
+License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 Automatically send Gravity Form entries to a Microsoft Teams channel.
 
 == Description ==
-Automatically send Gravity Form entries to a Microsoft Teams channel using an Incoming Webhook.
+The "Add-On for Microsoft Teams and Gravity Forms" WordPress plugin is a powerful integration tool that connects your website's forms with Microsoft Teams, a popular communication and collaboration platform. This plugin bridges the gap between Gravity Forms, a leading form builder plugin, and Microsoft Teams, enabling seamless communication and workflow automation.
+
+With this add-on, you can:
+
+* Automatically send form submissions to a designated Microsoft Teams channel
+* Map form fields to Teams message cards, making it easy to display user-submitted data
+* Trigger custom notifications and messages based on form responses
+* Enhance team collaboration and response times
+
+This plugin is ideal for:
+
+* Businesses using Microsoft Teams for team communication and collaboration
+* Developers seeking to streamline form data and notifications
+* Site owners wanting to centralize form submissions and team discussions
+* Those that have unreliable email systems
+
+By integrating Gravity Forms and Microsoft Teams, this add-on simplifies communication, boosts team productivity, and enhances user experience! It's a perfect solution for anyone looking to supercharge their team's workflow and responsiveness!
 
 == Installation ==
 1. Install the plugin from your website's plugin directory, or upload the plugin to your plugins folder. 
@@ -19,7 +34,7 @@ Automatically send Gravity Form entries to a Microsoft Teams channel using an In
 3. Go to Gravity Forms > Settings > Microsoft Teams.
 
 = Where can I request features and get further support? =
-Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
+Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 
 == Screenshots ==
 1. Plugin settings page
@@ -29,6 +44,9 @@ Join my [WordPress Support Discord server](https://discord.gg/3HnzNEJVnR)
 5. Microsoft Teams channel post
 
 == Changelog ==
+= 1.1.0 =
+* Update: New method for connecting to MS Teams
+
 = 1.0.9 =
 * Tweak: Removed some comments
 
