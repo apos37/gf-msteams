@@ -77,6 +77,15 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 
 
 	/**
+	 * Nonce
+	 *
+	 * @var string $_short_title
+	 */
+	private $nonce = 'msteams_nonce';
+
+
+
+	/**
 	 * Default accent color
 	 *
 	 * @var string
@@ -199,7 +208,8 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 			if ( !empty( $feeds ) ) {
 
 				// Send the form entry if query string says so
-				if ( isset( $_GET[ 'msteams' ] ) && sanitize_text_field( $_GET[ 'msteams' ] )  == 'true' &&
+				if ( isset( $_GET[ '_wpnonce' ] ) && wp_verify_nonce( $_GET[ '_wpnonce' ], $this->nonce ) &&
+					isset( $_GET[ 'msteams' ] ) && sanitize_text_field( $_GET[ 'msteams' ] )  == 'true' &&
 					isset( $_GET[ 'feed_id' ] ) && absint( $_GET[ 'feed_id' ] ) != '' ) {
 
 					// The feed id
@@ -232,7 +242,8 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 					$current_url = '/wp-admin/admin.php?page=gf_entries&view=entry&id='.$form[ 'id' ].'&lid='.$entry[ 'id' ];
 
 					// Resend button
-					$results .= '<a class="button" href="'.$current_url.'&feed_id='.$feed[ 'id' ].'&msteams=true">Resend</a>';
+					$resent_url = wp_nonce_url( $current_url.'&feed_id='.$feed[ 'id' ].'&msteams=true', $this->nonce );
+					$results .= '<a class="button" href="'.$resent_url.'">Resend</a>';
 
 					// Space between
 					$results .= $br;
@@ -272,7 +283,25 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 	 * @return string
 	 */
 	public function get_menu_icon() {
-		return file_get_contents( $this->get_base_path().'/img/msteams-icon.svg' );
+		global $wp_filesystem;
+		if ( !function_exists( 'request_filesystem_credentials' ) ) {
+			require_once( ABSPATH . 'wp-admin/includes/file.php' );
+		}
+		if ( !WP_Filesystem() ) {
+			return '';
+		}
+
+		$file_path = $this->get_base_path().'/img/msteams-icon.svg';
+
+		// Ensure the file exists and is readable
+		if ( $wp_filesystem->exists( $file_path ) && $wp_filesystem->is_readable( $file_path ) ) {
+			$icon = $wp_filesystem->get_contents( $file_path );
+	
+			// Escape the SVG output
+			return $icon;
+		} else {
+			return '';
+		}
 	} // End get_menu_icon()
 
 
@@ -425,14 +454,13 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 	 * @return void
 	 */
 	public function settings_media_upload( $field, $echo = true ) {
-        // get the button settings from the main field and then render the button
         $button = $field[ 'args' ][ 'button' ];
-        printf(
-            '<input type="button" id="%s" class="%s" value="%s"/>',
-            $button[ 'name' ],
-            $button[ 'class' ],
-            $button[ 'value' ],
-        );
+		printf(
+			'<input type="button" id="%s" class="%s" value="%s"/>',
+			esc_attr( $button[ 'name' ] ),
+			esc_attr( $button[ 'class' ] ),
+			esc_attr( $button[ 'value' ] )
+		);
     } // End settings_media_upload()
 
 
@@ -659,7 +687,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 					<td class="feedName column-feedName column-primary" data-colname="Feed Name" style="font-weight: bold;"><a href="'.esc_url( $feed_url ).'">'.esc_html( $feed[ 'meta' ][ 'feedName' ] ).'</a></td>
 					<td class="feedStatus column-feedStatus column-primary" data-colname="Feed Status">'.wp_kses_post( $is_feed_active ).'</td>
 					<td class="channel column-channel" data-colname="Channel">'.esc_html( $channel ).'</td>
-					<td class="form column-form column-primary" data-colname="Form"><a href="'.esc_url( $form_feeds_url ).'">' .$form[ 'title' ] . '</a></td>
+					<td class="form column-form column-primary" data-colname="Form"><a href="'.esc_url( $form_feeds_url ).'">'.esc_html( $form[ 'title' ] ).'</a></td>
 					<td class="formStatus column-formStatus column-primary" data-colname="Form Status">'.wp_kses_post( $is_form_active ).'</td>
 				</tr>';
 			}
@@ -750,10 +778,10 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 			$form = GFAPI::get_form( $feed[ 'form_id' ] );
 			
 		// Or else get the id from the query string
-		} elseif ( isset( $_GET[ 'id' ] ) && absint( $_GET[ 'id' ] ) != '' ) {
+		} elseif ( isset( $_GET[ 'id' ] ) && absint( $_GET[ 'id' ] ) != '' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 			// Get the form
-			$form = GFAPI::get_form( absint( $_GET[ 'id' ] ) );
+			$form = GFAPI::get_form( absint( $_GET[ 'id' ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		// Or no form
 		} else {
@@ -954,10 +982,10 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		$color = $this->get_setting( 'color' );
 		printf(
 			'<input type="color" id="%s" name="%s" class="%s" value="%s" style="width: 10rem;"/>',
-			$field[ 'name' ],
-			$field[ 'name' ],
-			$field[ 'class' ],
-			$color,
+			esc_attr( $field[ 'name' ] ),
+			esc_attr( $field[ 'name' ] ),
+			esc_attr( $field[ 'class' ] ),
+			esc_attr( $color ),
 		);
     } // End settings_color()
 
@@ -1110,7 +1138,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		if ( !$this->send_form_entry( $feed, $entry, $form, $email ) ) {
 
 			// Log that registration failed.
-			$this->add_feed_error( esc_html__( $this->_short_title.' error when trying to send message to channel', 'gf-msteams' ), $feed, $entry, $form ); // phpcs:ignore
+			$this->add_feed_error( esc_html__( 'Microsoft Teams error when trying to send message to channel', 'gf-msteams' ), $feed, $entry, $form ); // phpcs:ignore
 			return false;
 
 		// If we sent the form entry successfully
@@ -1128,7 +1156,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
             $sub_type = 'success';
             
             // Log that the registrant was added.
-            RGFormsModel::add_note( $entry[ 'id' ], 0, __( $this->_short_title, 'gf-msteams' ), $note, 'msteams', $sub_type );
+            RGFormsModel::add_note( $entry[ 'id' ], 0, __( 'Microsoft Teams', 'gf-msteams' ), $note, 'msteams', $sub_type );
 			$this->log_debug( __METHOD__ . '(): Message sent successfully.' ); // phpcs:ignore
 		}
 
@@ -1402,7 +1430,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 												[
 													'type'     => 'TextBlock',
 													'spacing'  => 'None',
-													'text'     => $this->convert_timezone( date( 'Y-m-d H:i:s', strtotime( $args[ 'date' ] ) ) ),
+													'text'     => $this->convert_timezone( gmdate( 'Y-m-d H:i:s', strtotime( $args[ 'date' ] ) ) ),
 													'isSubtle' => true,
 													'wrap'     => true
 												]
@@ -1502,7 +1530,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 			            'activityTitle'    => $site_name,
 			            'activitySubtitle' => home_url(),
 			            'activityImage'    => $image,
-			            'text'             => $this->convert_timezone( date( 'Y-m-d H:i:s', strtotime( $args[ 'date' ] ) ) ).$message,
+			            'text'             => $this->convert_timezone( gmdate( 'Y-m-d H:i:s', strtotime( $args[ 'date' ] ) ) ).$message,
 			            'facts'            => $facts,
 			        ]
 			    ],
@@ -1585,7 +1613,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		}
 		
 		// Encode
-		$json_data = json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+		$json_data = wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 		
 		// Remote post options
 		$options = [
