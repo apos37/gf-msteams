@@ -2,8 +2,8 @@
 Contributors: apos37
 Tags: microsoft, teams, gravity, forms, webhook
 Requires at least: 5.9.0
-Tested up to: 6.6.1
-Stable tag: 1.1.1
+Tested up to: 6.6.2
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -44,6 +44,10 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 5. Microsoft Teams channel post
 
 == Changelog ==
+= 1.1.2 =
+* Tweak: Verify compatibility with WP 6.6.2
+* Tweak: Update Gravity Forms logo
+
 = 1.1.1 =
 * Fix: Warnings from Plugin Checker
 

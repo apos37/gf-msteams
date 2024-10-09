@@ -79,10 +79,9 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 	/**
 	 * Nonce
 	 *
-	 * @var string $_short_title
+	 * @var string $nonce
 	 */
 	private $nonce = 'msteams_nonce';
-
 
 
 	/**
