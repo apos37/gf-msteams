@@ -3,9 +3,9 @@
  * Plugin Name:         Add-On for Microsoft Teams and Gravity Forms
  * Plugin URI:          https://apos37.com/wordpress-addon-for-ms-teams-gravity-forms/
  * Description:         Send Gravity Form entries to Microsoft Teams channel
- * Version:             1.1.2
+ * Version:             1.2.0
  * Requires at least:   5.9.0
- * Tested up to:        6.6.2
+ * Tested up to:        6.7.1
  * Author:              Apos37
  * Author URI:          https://apos37.com/
  * Text Domain:         gf-msteams
@@ -24,7 +24,7 @@ if ( !defined( 'ABSPATH' ) ) {
  */
 define( 'MSTEAMS_NAME', 'Add-On for Microsoft Teams and Gravity Forms' );
 define( 'MSTEAMS_TEXTDOMAIN', 'gf-msteams' );
-define( 'MSTEAMS_VERSION', '1.1.2' );
+define( 'MSTEAMS_VERSION', '1.2.0' );
 define( 'MSTEAMS_PLUGIN_ROOT', plugin_dir_path( __FILE__ ) );                                                   // /home/.../public_html/wp-content/plugins/gf-msteams/
 define( 'MSTEAMS_PLUGIN_DIR', plugins_url( '/'.MSTEAMS_TEXTDOMAIN.'/' ) );                                      // https://domain.com/wp-content/plugins/gf-msteams/
 define( 'MSTEAMS_SETTINGS_URL', admin_url( 'admin.php?page=gf_settings&subview='.MSTEAMS_TEXTDOMAIN ) );        // https://domain.com/wp-admin/admin.php?page=gf_settings&subview=gf-msteams/
@@ -78,6 +78,18 @@ function msteams_plugin_row_meta( $links, $file ) {
             'docs'    => '<a href="'.esc_url( 'https://apos37.com/wordpress-addon-for-ms-teams-gravity-forms/' ).'" target="_blank" aria-label="'.esc_attr__( 'Plugin Website Link', 'gf-msteams' ).'">'.esc_html__( 'Website', 'gf-msteams' ).'</a>',
             'discord' => '<a href="'.esc_url( 'https://discord.gg/3HnzNEJVnR' ).'" target="_blank" aria-label="'.esc_attr__( 'Plugin Support on Discord', 'gf-msteams' ).'">'.esc_html__( 'Discord Support', 'gf-msteams' ).'</a>'
         ];
+
+        // Require Gravity Forms Notice
+        if ( ! is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
+            echo '<div class="gravity-forms-required-notice" style="margin: 5px 0 15px; border-left-color: #d63638 !important; background: #FCF9E8; border: 1px solid #c3c4c7; border-left-width: 4px; box-shadow: 0 1px 1px rgba(0, 0, 0, .04); padding: 10px 12px;">';
+            /* translators: 1: Plugin name, 2: Gravity Forms link */
+            printf( __( 'This plugin requires the %s plugin to be activated!', 'gf-msteams' ),
+                '<a href="https://www.gravityforms.com/" target="_blank">Gravity Forms</a>'
+            );
+            echo '</div>';
+        }
+        
+        // Merge the links
         return array_merge( $links, $row_meta );
     }
 
@@ -103,9 +115,3 @@ if ( version_compare( PHP_VERSION, 8.0, '<=' ) && !function_exists( 'str_ends_wi
         return $needle !== '' && substr( $haystack, -strlen( $needle ) ) === (string)$needle;
     } // End str_ends_with()
 }
-
-
-/**
- * Require notice
- */
-require MSTEAMS_PLUGIN_ROOT . 'class-notice.php';

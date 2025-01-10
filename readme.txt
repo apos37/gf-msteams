@@ -2,8 +2,8 @@
 Contributors: apos37
 Tags: microsoft, teams, gravity, forms, webhook
 Requires at least: 5.9.0
-Tested up to: 6.6.2
-Stable tag: 1.1.2
+Tested up to: 6.7.1
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -28,6 +28,8 @@ This plugin is ideal for:
 
 By integrating Gravity Forms and Microsoft Teams, this add-on simplifies communication, boosts team productivity, and enhances user experience! It's a perfect solution for anyone looking to supercharge their team's workflow and responsiveness!
 
+** IMPORTANT `1.2.0` UPDATE ** If you installed the plugin prior to v1.1.0, you would have had to set up an Incoming Webhook app on MS Teams. If you still have it set up this way, you will need to remove the Incoming Webhook app on Teams and use a Workflow instead. See new instructions under the plugin settings.
+
 == Installation ==
 1. Install the plugin from your website's plugin directory, or upload the plugin to your plugins folder. 
 2. Activate it.
@@ -44,6 +46,10 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 5. Microsoft Teams channel post
 
 == Changelog ==
+= 1.2.0 =
+* Update: Removed old webhook method as it's deprecated now
+* Update: Added a notice on plugins page if GF is not activated
+
 = 1.1.2 =
 * Tweak: Verify compatibility with WP 6.6.2
 * Tweak: Update Gravity Forms logo

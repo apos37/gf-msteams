@@ -370,19 +370,6 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 				'description' => '<p>'.esc_html__( 'Send form entries to a Microsoft Teams channel.', 'gf-msteams' ).'</p>',
 				'fields'      => [
 					[
-						'name'              => 'workflow',
-						'type'              => 'checkbox',
-						'label'             => esc_html__( 'Use Workflow (New Method)', 'gf-msteams' ),
-						'tooltip'           => esc_html__( 'The old method of using an Incoming Webhook app is being deprecated by Microsoft as of August 15th, 2024, and they are switching to using Power Automate Workflows instead. Unfortunately, this means you will also need to set up the workflow (see instructions below).', 'gf-msteams' ),
-						'choices'           => [
-							[
-								'label'     	=> esc_html__( 'Enable', 'gf-msteams' ),
-								'name'      	=> 'workflow',
-								// 'default_value' => true,
-							],
-						],
-					],
-					[
 						'name'              => 'site_name',
 						'tooltip'           => esc_html__( 'The site name displayed on the messages. Limited to 50 characters.', 'gf-msteams' ),
 						'label'             => esc_html__( 'Site Name', 'gf-msteams' ),
@@ -721,24 +708,8 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 	public function settings_instructions( $field, $echo = true ) {
 		// Add the instructions
         echo '</pre>
-		<p><span style="font-weight: bold; color: red;">** IMPORTANT UPDATE **</span> If you installed this plugin prior to v1.1.0, you would have had to set up an Incoming Webhook app on MS Teams. If you still have it set up this way, you might be seeing a message from Microsoft at the bottom of your channel messages that says "<code>Action Required: O365 connectors... will be deprecated...</code>" <strong>Prior to August 15th, 2024</strong>, you will need to remove the Incoming Webhook app on Teams and use a Workflow instead. Instructions are below:</p>
-		<br><br>
 		<div>
-			<h2>'.esc_html__( 'Removing Incoming Webhook (if still using the old method)', 'gf-msteams' ).'</h2><ol>
-				<li>'.esc_html__( 'On Microsoft Teams, go to Apps > Manage your apps', 'gf-msteams' ).'</li>
-				<li>'.esc_html__( 'Find and click on Incoming Webhook in the list', 'gf-msteams' ).'</li>
-				<li>'.esc_html__( 'If you see your channel listed under "Recently used," simply click on the trash can icon to delete it. That\'s all.', 'gf-msteams' ).'</li>
-				<li>'.esc_html__( 'If you do not see your channel listed, on the left side of Teams, locate the team and the channel where the Incoming Webhook is configured', 'gf-msteams' ).'</li>
-				<li>'.esc_html__( 'Go to the channel name, select More options > Manage channel', 'gf-msteams' ).'</li>
-				<li>'.esc_html__( 'In the Manage channel window, select Edit', 'gf-msteams' ).'</li>
-				<li>'.esc_html__( 'In the left pane, select Configured', 'gf-msteams' ).'</li>
-				<li>'.esc_html__( 'Under Incoming Webhook, select 1 Configured', 'gf-msteams' ).'</li>
-				<li>'.esc_html__( 'Select Manage', 'gf-msteams' ).'</li>
-				<li>'.esc_html__( 'Select Remove and follow the prompt', 'gf-msteams' ).'</li>
-			</ol></div>
-			<br><br>
-			<h2>'.esc_html__( 'Connecting to Microsoft Teams (new method):', 'gf-msteams' ).'</h2><ol>
-			<li>'.esc_html__( 'At the top of this page, enable "Use Workflow (New Method)', 'gf-msteams' ).'</li>
+			<h2>'.esc_html__( 'Connecting to Microsoft Teams:', 'gf-msteams' ).'</h2><ol>
 				<li>'.esc_html__( 'From Teams, go to Apps > Workflows > Manage Workflows (or from Power Automate, go to My flows)', 'gf-msteams' ).'</li>
 				<li>'.esc_html__( 'Add a New Flow using a template', 'gf-msteams' ).'</li>
 				<li>'.esc_html__( 'Search templates for "webhook" and choose "Post to a channel when a webhook request is received"', 'gf-msteams' ).'</li>
@@ -816,14 +787,6 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 						'required' => false,
 						'tooltip'  => esc_html__( 'The Microsoft Teams channel name. For reference only.', 'gf-msteams' ),
 					],
-					// [
-					// 	'name'          => 'color',
-					// 	'label'         => esc_html__( 'Accent Color', 'gf-msteams' ),
-					// 	'type'          => 'text',
-					// 	'required'      => false,
-					// 	'tooltip'       => esc_html__( 'Choose a color for the top bar of the messages using a hex code. Default is red (#FF0000).', 'gf-msteams' ),
-					// 	'default_value' => '#FF0000',
-					// ],
 					[
 						'name'    => 'message',
 						'label'   => esc_html__( 'Message (Optional)', 'gf-msteams' ),
@@ -1182,13 +1145,8 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
         // Store the messsage facts
         $facts = [];
 
-		// Are we using workflows?
-		$workflow = filter_var( $this->get_plugin_setting( 'workflow' ), FILTER_VALIDATE_BOOLEAN );
-		if ( $workflow ) {
-			$fact_key = 'title';
-		} else {
-			$fact_key = 'name';
-		}
+		// Fact key
+		$fact_key = 'title';
 
         // Iter the fields
         foreach ( $form[ 'fields' ] as $field ) {
@@ -1381,233 +1339,129 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
             $message = '';
         }
 
-        // Get the accent color
-		$color = $this->sanitize_and_validate_color( $feed[ 'meta' ][ 'color' ], $this->default_accent_color );
-
-		// Which method are we using?
-		$workflow = filter_var( $this->get_plugin_setting( 'workflow' ), FILTER_VALIDATE_BOOLEAN );
-
-		// New method of using Power Automate Workflow
-		if ( $workflow ) {
-			$data = [
-				'attachments' => [
-					[
-						'contentType' => 'application/vnd.microsoft.card.adaptive',
-						'content'     => [
-							'type'    => 'AdaptiveCard',
-							'body'    => [
-								[
-									'type'   => 'TextBlock',
-									'size'   => 'ExtraLarge',
-									'weight' => 'Bolder',
-									'text'   => $title
-								],
-								[
-									'type'    => 'ColumnSet',
-									'columns' => [
-										[
-											'type'  => 'Column',
-											'items' => [
-												[
-													'type'    => 'Image',
-													'url'     => $image,
-													'altText' => $site_name.' logo',
-													'size'    => 'Small'
-												]
-											],
-											'width' => 'auto'
+		// Put the data together
+		$data = [
+			'attachments' => [
+				[
+					'contentType' => 'application/vnd.microsoft.card.adaptive',
+					'content'     => [
+						'type'    => 'AdaptiveCard',
+						'body'    => [
+							[
+								'type'   => 'TextBlock',
+								'size'   => 'ExtraLarge',
+								'weight' => 'Bolder',
+								'text'   => $title
+							],
+							[
+								'type'    => 'ColumnSet',
+								'columns' => [
+									[
+										'type'  => 'Column',
+										'items' => [
+											[
+												'type'    => 'Image',
+												'url'     => $image,
+												'altText' => $site_name.' logo',
+												'size'    => 'Small'
+											]
 										],
-										[
-											'type'  => 'Column',
-											'items' => [
-												[
-													'type'   => 'TextBlock',
-													'weight' => 'Bolder',
-													'text'   => $site_name,
-													'wrap'   => true
-												],
-												[
-													'type'     => 'TextBlock',
-													'spacing'  => 'None',
-													'text'     => $this->convert_timezone( gmdate( 'Y-m-d H:i:s', strtotime( $args[ 'date' ] ) ) ),
-													'isSubtle' => true,
-													'wrap'     => true
-												]
+										'width' => 'auto'
+									],
+									[
+										'type'  => 'Column',
+										'items' => [
+											[
+												'type'   => 'TextBlock',
+												'weight' => 'Bolder',
+												'text'   => $site_name,
+												'wrap'   => true
 											],
-											'width' => 'stretch'
-										]
+											[
+												'type'     => 'TextBlock',
+												'spacing'  => 'None',
+												'text'     => $this->convert_timezone( gmdate( 'Y-m-d H:i:s', strtotime( $args[ 'date' ] ) ) ),
+												'isSubtle' => true,
+												'wrap'     => true
+											]
+										],
+										'width' => 'stretch'
 									]
-								],
-								[
-									'type' => 'TextBlock',
-									'text' => $message,
-									'wrap' => true
-								],
-								[
-									'type'  => 'FactSet',
-									'facts' => $facts
 								]
 							],
-							'actions' => [],
-							'msteams' => [
-								'width' => 'Full'
+							[
+								'type' => 'TextBlock',
+								'text' => $message,
+								'wrap' => true
 							],
-							'$schema' => 'http://adaptivecards.io/schemas/adaptive-card.json',
-							'version' => '1.4'
-						]
+							[
+								'type'  => 'FactSet',
+								'facts' => $facts
+							]
+						],
+						'actions' => [],
+						'msteams' => [
+							'width' => 'Full'
+						],
+						'$schema' => 'http://adaptivecards.io/schemas/adaptive-card.json',
+						'version' => '1.4'
 					]
 				]
+			]
+		];
+
+		// Visit Site Button
+		if ( isset( $feed[ 'meta' ][ 'visit_site' ] ) && $feed[ 'meta' ][ 'visit_site' ] ) {
+			$data[ 'attachments' ][0][ 'content' ][ 'actions' ][] = [
+				'type'  => 'Action.OpenUrl',
+				'title' => esc_html__( 'Visit Site', 'gf-msteams' ),
+				'url'   => home_url()
 			];
+		}
 
-			// Visit Site Button
-			if ( isset( $feed[ 'meta' ][ 'visit_site' ] ) && $feed[ 'meta' ][ 'visit_site' ] ) {
-				$data[ 'attachments' ][0][ 'content' ][ 'actions' ][] = [
-					'type'  => 'Action.OpenUrl',
-					'title' => esc_html__( 'Visit Site', 'gf-msteams' ),
-					'url'   => home_url()
-				];
-			}
-
-			// View Entry Button
-			if ( isset( $feed[ 'meta' ][ 'view_entry' ] ) && $feed[ 'meta' ][ 'view_entry' ] ) {
-				$data[ 'attachments' ][0][ 'content' ][ 'actions' ][] = [
-					'type'  => 'Action.OpenUrl',
-					'title' => esc_html__( 'View Entry', 'gf-msteams' ),
-					'url'   => home_url().'/wp-admin/admin.php?page=gf_entries&view=entry&id='.$form[ 'id' ].'&lid='.$entry[ 'id' ]
-				];
-			}
-
-			// View User Button
-			if ( isset( $feed[ 'meta' ][ 'view_entry' ] ) && $feed[ 'meta' ][ 'view_user' ] && $args[ 'user_id' ] > 0 ) {
-				$data[ 'attachments' ][0][ 'content' ][ 'actions' ][] = [
-					'type'  => 'Action.OpenUrl',
-					'title' => esc_html__( 'View User', 'gf-msteams' ),
-					'url'   => admin_url( 'user-edit.php?user_id='.$args[ 'user_id' ] )
-				];
-			}
-
-			// Custom Button
-			if ( isset( $feed[ 'meta' ][ 'custom_button' ] ) && $feed[ 'meta' ][ 'custom_button' ] &&
-			     isset( $feed[ 'meta' ][ 'custom_button_text' ] ) && sanitize_text_field( $feed[ 'meta' ][ 'custom_button_text' ] ) != '' && 
-			     isset( $feed[ 'meta' ][ 'custom_button_url' ] ) && filter_var( $feed[ 'meta' ][ 'custom_button_url' ] , FILTER_SANITIZE_URL ) != '' ) {
-
-				// Let's check if we are showing this to users only
-				if ( isset( $feed[ 'meta' ][ 'custom_button_users_only' ] ) && $feed[ 'meta' ][ 'custom_button_users_only' ] ) {
-					$users_only = true;
-				} else {
-					$users_only = false;
-				}
-				if ( $users_only && $args[ 'user_id' ] > 0 || !$users_only ) {
-
-					// Replace merge tag variables
-					$text = sanitize_text_field( $feed[ 'meta' ][ 'custom_button_text' ] );
-					$text = GFCommon::replace_variables( $text, $form, $entry, false, true, false, 'text' );
-					$url = filter_var( $feed[ 'meta' ][ 'custom_button_url' ] , FILTER_SANITIZE_URL );
-					$url = GFCommon::replace_variables( $url, $form, $entry, true, true, false, 'text' );
-					
-					// The button
-					$data[ 'attachments' ][0][ 'content' ][ 'actions' ][] = [
-						'type'  => 'Action.OpenUrl',
-						'title' => $text,
-						'url'   => $url
-					];
-				}
-			}
-
-		// Old method Incoming Webhook app
-		} else {
-
-			// Put the message card together
-			$data = [
-			    '@type'      => 'MessageCard',
-			    '@context'   => 'https://schema.org/extensions',
-			    'summary'    => 'Gravity Forms Microsoft Teams Integration',
-			    'themeColor' => $color,
-			    'title'      => $title,
-			    'sections'   => [
-			        [
-			            'activityTitle'    => $site_name,
-			            'activitySubtitle' => home_url(),
-			            'activityImage'    => $image,
-			            'text'             => $this->convert_timezone( gmdate( 'Y-m-d H:i:s', strtotime( $args[ 'date' ] ) ) ).$message,
-			            'facts'            => $facts,
-			        ]
-			    ],
+		// View Entry Button
+		if ( isset( $feed[ 'meta' ][ 'view_entry' ] ) && $feed[ 'meta' ][ 'view_entry' ] ) {
+			$data[ 'attachments' ][0][ 'content' ][ 'actions' ][] = [
+				'type'  => 'Action.OpenUrl',
+				'title' => esc_html__( 'View Entry', 'gf-msteams' ),
+				'url'   => home_url().'/wp-admin/admin.php?page=gf_entries&view=entry&id='.$form[ 'id' ].'&lid='.$entry[ 'id' ]
 			];
+		}
 
-			// Visit Site Button
-			if ( isset( $feed[ 'meta' ][ 'visit_site' ] ) && $feed[ 'meta' ][ 'visit_site' ] ) {
-				$data[ 'potentialAction' ][] = [
-					'@type'   => 'OpenUri',
-					'name'    => esc_html__( 'Visit Site', 'gf-msteams' ),
-					'targets' => [
-						[
-							'os'  => 'default',
-							'uri' => home_url()
-						]
-					]
-				];
+		// View User Button
+		if ( isset( $feed[ 'meta' ][ 'view_entry' ] ) && $feed[ 'meta' ][ 'view_user' ] && $args[ 'user_id' ] > 0 ) {
+			$data[ 'attachments' ][0][ 'content' ][ 'actions' ][] = [
+				'type'  => 'Action.OpenUrl',
+				'title' => esc_html__( 'View User', 'gf-msteams' ),
+				'url'   => admin_url( 'user-edit.php?user_id='.$args[ 'user_id' ] )
+			];
+		}
+
+		// Custom Button
+		if ( isset( $feed[ 'meta' ][ 'custom_button' ] ) && $feed[ 'meta' ][ 'custom_button' ] &&
+			 isset( $feed[ 'meta' ][ 'custom_button_text' ] ) && sanitize_text_field( $feed[ 'meta' ][ 'custom_button_text' ] ) != '' && 
+			 isset( $feed[ 'meta' ][ 'custom_button_url' ] ) && filter_var( $feed[ 'meta' ][ 'custom_button_url' ] , FILTER_SANITIZE_URL ) != '' ) {
+
+			// Let's check if we are showing this to users only
+			if ( isset( $feed[ 'meta' ][ 'custom_button_users_only' ] ) && $feed[ 'meta' ][ 'custom_button_users_only' ] ) {
+				$users_only = true;
+			} else {
+				$users_only = false;
 			}
+			if ( $users_only && $args[ 'user_id' ] > 0 || !$users_only ) {
 
-			// View Entry Button
-			if ( isset( $feed[ 'meta' ][ 'view_entry' ] ) && $feed[ 'meta' ][ 'view_entry' ] ) {
-				$data[ 'potentialAction' ][] = [
-					'@type'   => 'OpenUri',
-					'name'    => esc_html__( 'View Entry', 'gf-msteams' ),
-					'targets' => [
-						[
-							'os'  => 'default',
-							'uri' => home_url().'/wp-admin/admin.php?page=gf_entries&view=entry&id='.$form[ 'id' ].'&lid='.$entry[ 'id' ]
-						]
-					]
+				// Replace merge tag variables
+				$text = sanitize_text_field( $feed[ 'meta' ][ 'custom_button_text' ] );
+				$text = GFCommon::replace_variables( $text, $form, $entry, false, true, false, 'text' );
+				$url = filter_var( $feed[ 'meta' ][ 'custom_button_url' ] , FILTER_SANITIZE_URL );
+				$url = GFCommon::replace_variables( $url, $form, $entry, true, true, false, 'text' );
+				
+				// The button
+				$data[ 'attachments' ][0][ 'content' ][ 'actions' ][] = [
+					'type'  => 'Action.OpenUrl',
+					'title' => $text,
+					'url'   => $url
 				];
-			}
-
-			// View User Button
-			if ( isset( $feed[ 'meta' ][ 'view_entry' ] ) && $feed[ 'meta' ][ 'view_user' ] && $args[ 'user_id' ] > 0 ) {
-				$data[ 'potentialAction' ][] = [
-					'@type'   => 'OpenUri',
-					'name'    => esc_html__( 'View User', 'gf-msteams' ),
-					'targets' => [
-						[
-							'os'  => 'default',
-							'uri' => admin_url( 'user-edit.php?user_id='.$args[ 'user_id' ] )
-						]
-					]
-				];
-			}
-
-			// Custom Button
-			if ( isset( $feed[ 'meta' ][ 'custom_button' ] ) && $feed[ 'meta' ][ 'custom_button' ] &&
-			     isset( $feed[ 'meta' ][ 'custom_button_text' ] ) && sanitize_text_field( $feed[ 'meta' ][ 'custom_button_text' ] ) != '' && 
-			     isset( $feed[ 'meta' ][ 'custom_button_url' ] ) && filter_var( $feed[ 'meta' ][ 'custom_button_url' ] , FILTER_SANITIZE_URL ) != '' ) {
-
-				// Let's check if we are showing this to users only
-				if ( isset( $feed[ 'meta' ][ 'custom_button_users_only' ] ) && $feed[ 'meta' ][ 'custom_button_users_only' ] ) {
-					$users_only = true;
-				} else {
-					$users_only = false;
-				}
-				if ( $users_only && $args[ 'user_id' ] > 0 || !$users_only ) {
-
-					// Replace merge tag variables
-					$text = sanitize_text_field( $feed[ 'meta' ][ 'custom_button_text' ] );
-					$text = GFCommon::replace_variables( $text, $form, $entry, false, true, false, 'text' );
-					$url = filter_var( $feed[ 'meta' ][ 'custom_button_url' ] , FILTER_SANITIZE_URL );
-					$url = GFCommon::replace_variables( $url, $form, $entry, true, true, false, 'text' );
-					
-					// The button
-					$data[ 'potentialAction' ][] = [
-						'@type'   => 'OpenUri',
-						'name'    => $text,
-						'targets' => [
-							[
-								'os'  => 'default',
-								'uri' => $url
-							]
-						]
-					];
-				}
 			}
 		}
 		
