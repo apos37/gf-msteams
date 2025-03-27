@@ -1,9 +1,9 @@
 === Add-On for Microsoft Teams and Gravity Forms ===
 Contributors: apos37
 Tags: microsoft, teams, gravity, forms, webhook
-Requires at least: 5.9.0
-Tested up to: 6.7.1
-Stable tag: 1.2.0
+Requires at least: 5.9
+Tested up to: 6.7
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -46,6 +46,9 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 5. Microsoft Teams channel post
 
 == Changelog ==
+= 1.2.1 =
+* Tweak: Optimization
+
 = 1.2.0 =
 * Update: Removed old webhook method as it's deprecated now
 * Update: Added a notice on plugins page if GF is not activated
