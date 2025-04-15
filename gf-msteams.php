@@ -3,7 +3,7 @@
  * Plugin Name:         Add-On for Microsoft Teams and Gravity Forms
  * Plugin URI:          https://github.com/apos37/gf-msteams
  * Description:         Send Gravity Form entries to Microsoft Teams channel
- * Version:             1.2.1
+ * Version:             1.2.2
  * Requires at least:   5.9
  * Tested up to:        6.7
  * Author:              WordPress Enhanced

@@ -803,13 +803,13 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 			[
 				'title'  => esc_html__( 'Fields', 'gf-msteams' ),
 				'fields' => [
-					[
-						'name'      => 'mappedFields',
-						'label'     => esc_html__( 'Match required fields', 'gf-msteams' ),
-						'type'      => 'field_map',
-						'field_map' => $this->merge_vars_field_map(),
-						'tooltip'   => esc_html__( 'Setup the message values by selecting the appropriate form field from the list.', 'gf-msteams' ),
-					],
+					// [
+					// 	'name'      => 'mappedFields',
+					// 	'label'     => esc_html__( 'Match required fields', 'gf-msteams' ),
+					// 	'type'      => 'field_map',
+					// 	'field_map' => $this->merge_vars_field_map(),
+					// 	'tooltip'   => esc_html__( 'Setup the message values by selecting the appropriate form field from the list.', 'gf-msteams' ),
+					// ],
 					[
 						'name'    => 'checkboxgroup',
 						'label'   => esc_html__( 'Include the following fields and additional information in Teams Message' ),
@@ -991,7 +991,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		$merge_fields = $this->get_list_merge_fields();
 
 		// If merge fields exist, add to field map.
-		if ( ! empty( $merge_fields ) && is_array( $merge_fields ) ) {
+		if ( !empty( $merge_fields ) && is_array( $merge_fields ) ) {
 
 			// Loop through merge fields.
 			foreach ( $merge_fields as $field => $config ) {
@@ -1057,47 +1057,38 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 			return $entry;
 		}
 
-		// Retrieve the name => value pairs for all fields mapped in the 'mappedFields' field map.
-		$field_map = $this->get_field_map_fields( $feed, 'mappedFields' );
+		// // Retrieve the name => value pairs for all fields mapped in the 'mappedFields' field map.
+		// $field_map = $this->get_field_map_fields( $feed, 'mappedFields' );
 
-		// Get mapped email address.
-		$email = $this->get_field_value( $form, $entry, $field_map[ 'email' ] );
+		// // Loop through the fields from the field map setting building an array of values to be passed to the third-party service.
+		// $merge_vars = [];
+		// foreach ( $field_map as $name => $field_id ) {
 
-		// If email address is invalid, log error and return.
-		if ( GFCommon::is_invalid_or_empty_email( $email ) ) {
-			$this->add_feed_error( esc_html__( 'A valid Email address must be provided.', 'gf-msteams' ), $feed, $entry, $form );
-			return $entry;
-		}
+		// 	// If no field is mapped, skip it.
+		// 	if ( rgblank( $field_id ) ) {
+		// 		continue;
+		// 	}
 
-		// Loop through the fields from the field map setting building an array of values to be passed to the third-party service.
-		$merge_vars = [];
-		foreach ( $field_map as $name => $field_id ) {
+		// 	// Get field value.
+		// 	$field_value = $this->get_field_value( $form, $entry, $field_id );
 
-			// If no field is mapped, skip it.
-			if ( rgblank( $field_id ) ) {
-				continue;
-			}
+		// 	// If field value is empty, skip it.
+		// 	if ( empty( $field_value ) ) {
+		// 		continue;
+		// 	}
 
-			// Get field value.
-			$field_value = $this->get_field_value( $form, $entry, $field_id );
+		// 	// Get the field value for the specified field id
+		// 	$merge_vars[ $name ] = $field_value;
+		// }
 
-			// If field value is empty, skip it.
-			if ( empty( $field_value ) ) {
-				continue;
-			}
-
-			// Get the field value for the specified field id
-			$merge_vars[ $name ] = $field_value;
-		}
-
-		// Check if there are empty mapped fields
-		if ( empty( $merge_vars ) ) {
-			$this->add_feed_error( esc_html__( 'Aborted: Empty merge fields', 'gf-msteams' ), $feed, $entry, $form );
-			return $entry;
-		}
+		// // Check if there are empty mapped fields
+		// if ( empty( $merge_vars ) ) {
+		// 	$this->add_feed_error( esc_html__( 'Aborted: Empty merge fields', 'gf-msteams' ), $feed, $entry, $form );
+		// 	return $entry;
+		// }
 
 		// If sending failed
-		if ( !$this->send_form_entry( $feed, $entry, $form, $email ) ) {
+		if ( !$this->send_form_entry( $feed, $entry, $form ) ) {
 
 			// Log that registration failed.
 			$this->add_feed_error( esc_html__( 'Microsoft Teams error when trying to send message to channel', 'gf-msteams' ), $feed, $entry, $form ); // phpcs:ignore
@@ -1134,7 +1125,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
      * @param array $form
      * @return array
      */
-    public function send_form_entry( $feed, $entry, $form, $email ) {
+    public function send_form_entry( $feed, $entry, $form ) {
 		// Are we hiding empty values?
 		if ( isset( $feed[ 'meta' ][ 'hide_blank' ] ) && $feed[ 'meta' ][ 'hide_blank' ] ) {
 			$hiding = true;
@@ -1144,6 +1135,8 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 
         // Store the messsage facts
         $facts = [];
+		$files = [];
+		$email = false;
 
 		// Fact key
 		$fact_key = 'title';
@@ -1165,7 +1158,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 			}
 
 			// Get the field label
-            $label = $field->label;
+            $label = ( isset( $field->adminLabel ) && $field->adminLabel != '' ) ? $field->adminLabel : $field->label;
 
             // Store the value here
             $value = '';
@@ -1174,15 +1167,66 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
             if ( $field->type == 'consent' ) {
 
                 // If they selected the consent checkbox
-                if ( isset( $entry[ $field_id ] ) && $entry[ $field_id ] == 1 ) {
+                if ( isset( $entry[ $field_id . '.1' ] ) && $entry[ $field_id . '.1' ] == 1 ) {
                     $value = 'True';
-                }
+                } else {
+					$value = 'False';
+				}
             
             // Checkbox
             } elseif ( $field->type == 'checkbox' ) {
                 
 				// Get the choices
                 $value = $this->get_gf_checkbox_values( $form, $entry, $field_id );
+
+			// Images
+            } elseif ( $field->type == 'fileupload' ) {
+                
+				// Get the file data from the entry
+				$file_arr = $entry[ $field_id ];
+
+				// Decode if it's a JSON string representing an array
+				if ( is_string( $file_arr ) ) {
+					$decoded = json_decode( $file_arr, true );
+					// Use decoded only if it's a proper array
+					if ( is_array( $decoded ) ) {
+						$file_arr = $decoded;
+					}
+				}
+
+				// Ensure it's always an array for processing
+				if ( !is_array( $file_arr ) ) {
+					$file_arr = [ $file_arr ];
+				}
+
+				if ( !empty( $file_arr ) ) {
+					$files[ $field_id ] = [
+						'label' => $label
+					];
+
+					foreach ( $file_arr as $num => $file_url ) {
+						$num++;
+
+						// Clean up malformed data just in case
+						if ( !is_string( $file_url ) || empty( $file_url ) ) {
+							continue;
+						}
+
+						// Check if the URL ends with a common image extension
+						$extension = strtolower( pathinfo( parse_url( $file_url, PHP_URL_PATH ), PATHINFO_EXTENSION ) );
+						$is_image = in_array( $extension, [ 'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg' ] );
+
+						if ( $is_image ) {
+							$files[ $field_id ][ 'images' ][] = [
+								'type'    => 'Image',
+								'url'     => $file_url,
+								'altText' => 'Image ' . $num . ' for ' . $label
+							];
+						} else {
+							$files[ $field_id ][ 'files' ][] = $file_url;
+						}
+					}
+				}
             
             // Radio/survey/select
             } elseif ( $field->type != 'quiz' && $field->choices && !empty( $field->choices ) ) {
@@ -1216,15 +1260,15 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 			}
 
             // Add the fact
-			if ( !$hiding || ( $hiding && $value != '' ) ) {
+			if ( ( !$hiding || ( $hiding && $value != '' ) ) && $field->type !== 'fileupload' ) {
 				$facts[] = [
 					$fact_key => $label,
-					'value'   => $value
+					'value'   => $value,
 				];
 			}
 
             // Check if the field type is a survey
-            if ( !$email && $field->type == 'email' && isset( $entry[ $field_id ] ) ) {
+            if ( $field->type == 'email' && isset( $entry[ $field_id ] ) ) {
                 $email = $entry[ $field_id ];
             }
         }
@@ -1258,7 +1302,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		if ( isset( $feed[ 'meta' ][ 'user_id' ] ) && $feed[ 'meta' ][ 'user_id' ] && $user_id ) {
 			$facts[] = [
 				$fact_key => 'User ID: ',
-				'value'   => $user_id
+				'value'   => $user_id,
 			];
 		}
 
@@ -1266,7 +1310,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 		if ( !$hiding && isset( $feed[ 'meta' ][ 'source_url' ] ) && $feed[ 'meta' ][ 'source_url' ] ) {
 			$facts[] = [
 				$fact_key => 'Source URL: ',
-				'value'   => $entry[ 'source_url' ]
+				'value'   => $entry[ 'source_url' ],
 			];
 		}
 
@@ -1279,7 +1323,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
         ];
 
         // Send the message
-        if ( $this->send_msg( $args, $facts, $form, $entry, $feed ) ) {
+        if ( $this->send_msg( $args, $facts, $files, $form, $entry, $feed ) ) {
 
             // Return true
             return true;
@@ -1297,7 +1341,7 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
      *
      * @return void
      */
-    public function send_msg( $args, $facts, $form, $entry, $feed ) {
+    public function send_msg( $args, $facts, $files, $form, $entry, $feed ) {
         // Get the site name
 		$get_site_name = sanitize_text_field( $this->get_plugin_setting( 'site_name' ) );
         if ( $get_site_name && $get_site_name != '' ) {
@@ -1410,6 +1454,49 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 			]
 		];
 
+		// Add image thumbnails if there are any fileuploads
+		if ( !empty( $files ) ) {
+			foreach ( $files as $file_data ) {
+				$data[ 'attachments' ][0][ 'content' ][ 'body' ][] = [
+					'type' => 'TextBlock',
+					'weight' => 'Bolder',
+					'text' => $file_data[ 'label' ] . ':',
+					'wrap' => true
+				];
+
+				if ( isset( $file_data[ 'images' ] ) ) {
+					$data[ 'attachments' ][0][ 'content' ][ 'body' ][] = [
+						'type'      => 'ImageSet',
+						'imageSize' => 'large',
+						'images'    => $file_data[ 'images' ]
+					];
+				}
+
+				// Create links for each
+				$file_links = [];
+				foreach ( $file_data[ 'images' ] as $img ) {
+					$file_links[] = [
+						'type'  => 'Action.OpenUrl',
+						'title' => basename( $img[ 'url' ] ),
+						'url'   => $img[ 'url' ]
+					];
+				}
+				foreach ( $file_data[ 'files' ] as $file_url ) {
+					$file_links[] = [
+						'type'  => 'Action.OpenUrl',
+						'title' => basename( $file_url ),
+						'url'   => $file_url
+					];
+				}
+				
+				// Add clickable button to open full-size image
+				$data[ 'attachments' ][0 ][ 'content' ][ 'body' ][] = [
+					'type'  => 'ActionSet',
+					'actions' => $file_links
+				];
+			}
+		}
+		
 		// Visit Site Button
 		if ( isset( $feed[ 'meta' ][ 'visit_site' ] ) && $feed[ 'meta' ][ 'visit_site' ] ) {
 			$data[ 'attachments' ][0][ 'content' ][ 'actions' ][] = [
