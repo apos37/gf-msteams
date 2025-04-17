@@ -2,8 +2,8 @@
 Contributors: apos37
 Tags: microsoft, teams, gravity, forms, webhook
 Requires at least: 5.9
-Tested up to: 6.7
-Stable tag: 1.2.2
+Tested up to: 6.8
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -46,6 +46,9 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 5. Microsoft Teams channel post
 
 == Changelog ==
+= 1.2.3 =
+* Update: Updated author name and website again per WordPress trademark policy
+
 = 1.2.2 =
 * Update: Now handling file uploads that you can click to open with screenshots for images (thanks to Brian H for suggestion)
 * Update: Now using admin labels if provided (thanks to @gluten_50178 for suggestion)
