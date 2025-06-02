@@ -1551,6 +1551,9 @@ class GF_MicrosoftTeams extends GFFeedAddOn {
 				];
 			}
 		}
+
+		// Apply the filter before encoding and sending the data
+		$data = apply_filters( 'ms_teams_data_args', $data, $form, $entry );
 		
 		// Encode
 		$json_data = wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );

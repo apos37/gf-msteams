@@ -3,7 +3,7 @@ Contributors: apos37
 Tags: microsoft, teams, gravity, forms, webhook
 Requires at least: 5.9
 Tested up to: 6.8
-Stable tag: 1.2.3
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -36,7 +36,7 @@ By integrating Gravity Forms and Microsoft Teams, this add-on simplifies communi
 3. Go to Gravity Forms > Settings > Microsoft Teams.
 
 = Where can I request features and get further support? =
-Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
+We recommend using our [website support forum](https://pluginrx.com/support/plugin/gf-msteams/) as the primary method for requesting features and getting help. You can also reach out via our [Discord support server](https://discord.gg/3HnzNEJVnR) or the [WordPress.org support forum](https://wordpress.org/support/plugin/gf-msteams/), but please note that WordPress.org doesn’t always notify us of new posts, so it’s not ideal for time-sensitive issues.
 
 == Screenshots ==
 1. Plugin settings page
@@ -46,6 +46,10 @@ Join my [Discord support server](https://discord.gg/3HnzNEJVnR)
 5. Microsoft Teams channel post
 
 == Changelog ==
+= 1.3.0 =
+* Update: New support links
+* Update: Added a hook to allow data args updates before sending the message to MS Teams
+
 = 1.2.3 =
 * Update: Updated author name and website again per WordPress trademark policy
 
