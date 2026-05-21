@@ -1,9 +1,9 @@
 === Add-On for Microsoft Teams and Gravity Forms ===
 Contributors: apos37
 Tags: microsoft, teams, gravity, forms, webhook
-Requires at least: 5.9
-Tested up to: 6.8
-Stable tag: 1.3.0
+Requires at least: 6.0
+Tested up to: 7.0
+Stable tag: 1.3.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -46,6 +46,10 @@ We recommend using our [website support forum](https://pluginrx.com/support/plug
 5. Microsoft Teams channel post
 
 == Changelog ==
+= 1.3.0.1 =
+* Compatibility: Increased minimum required WordPress version to 6.0
+* Compatibility: Tested with WordPress 7.0
+
 = 1.3.0 =
 * Update: New support links
 * Update: Added a hook to allow data args updates before sending the message to MS Teams

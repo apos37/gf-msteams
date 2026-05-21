@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name:         Add-On for Microsoft Teams and Gravity Forms
- * Plugin URI:          https://github.com/apos37/gf-msteams
+ * Plugin URI:          https://pluginrx.com/plugin/gf-msteams/
  * Description:         Send Gravity Form entries to Microsoft Teams channel
- * Version:             1.3.0
- * Requires at least:   5.9
- * Tested up to:        6.8
+ * Version:             1.3.0.1
+ * Requires at least:   6.0
+ * Tested up to:        7.0
  * Author:              PluginRx
  * Author URI:          https://pluginrx.com/
  * Discord URI:         https://discord.gg/3HnzNEJVnR
